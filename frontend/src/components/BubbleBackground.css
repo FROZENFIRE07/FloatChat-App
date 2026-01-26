@@ -1,0 +1,238 @@
+/* Bubble Background Styles - Ported from User Snippet */
+.bubble-holder {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: 0;
+    /* Behind content but above base background if needed */
+    pointer-events: none;
+    /* Let clicks pass through */
+}
+
+/* Bubbles */
+.bubble-container {
+    position: absolute;
+    bottom: -250px;
+    opacity: 0.6;
+    /* Slight transparency to blend with dark theme */
+}
+
+.bubble-large,
+.bubble-small {
+    border-radius: 100%;
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1),
+        inset 0px 10px 30px 5px rgba(96, 147, 195, 1);
+    background: rgba(5, 94, 143, 0.1);
+    /* Added slight fill for better visibility */
+}
+
+.bubble-large {
+    width: 231px;
+    height: 231px;
+}
+
+.bubble-small {
+    width: 82px;
+    height: 82px;
+}
+
+/* Static Circles */
+.bubble-static {
+    width: 500px;
+    height: 500px;
+    border-radius: 100%;
+    background-color: #055E8F;
+    position: absolute;
+    opacity: 0.1;
+    /* Very subtle in background */
+    filter: blur(40px);
+    /* Soften them for modern look */
+    z-index: -1;
+}
+
+.bubble-9 {
+    top: -200px;
+    left: 10%;
+}
+
+.bubble-10 {
+    bottom: -200px;
+    right: -10%;
+}
+
+/* Animations */
+.bubble-1 {
+    left: 8%;
+    animation-delay: 1s;
+}
+
+.bubble-1 .bubble-animation-y {
+    animation-duration: 7s;
+    animation-delay: 0s;
+}
+
+.bubble-2 {
+    left: 40%;
+    animation-delay: 2s;
+}
+
+.bubble-2 .bubble-animation-y {
+    animation-duration: 6s;
+    animation-delay: 2s;
+}
+
+.bubble-3 {
+    right: 15%;
+    animation-delay: 1s;
+}
+
+.bubble-3 .bubble-animation-y {
+    animation-duration: 5s;
+    animation-delay: 1.5s;
+}
+
+.bubble-4 {
+    left: 8%;
+    animation-delay: 2s;
+}
+
+.bubble-4 .bubble-animation-y {
+    animation-duration: 6s;
+    animation-delay: 3s;
+}
+
+.bubble-5 {
+    left: 40%;
+    animation-delay: 1s;
+}
+
+.bubble-5 .bubble-animation-y {
+    animation-duration: 5s;
+    animation-delay: 0s;
+}
+
+.bubble-6 {
+    left: 45%;
+    animation-delay: 2s;
+}
+
+.bubble-6 .bubble-animation-y {
+    animation-duration: 7s;
+    animation-delay: 3.5s;
+}
+
+.bubble-7 {
+    right: 15%;
+    animation-delay: 1s;
+}
+
+.bubble-7 .bubble-animation-y {
+    animation-duration: 5.5s;
+    animation-delay: 3s;
+}
+
+.bubble-8 {
+    right: 5%;
+    animation-delay: 2s;
+}
+
+.bubble-8 .bubble-animation-y {
+    animation-duration: 7s;
+    animation-delay: 3s;
+}
+
+.bubble-animation-x {
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    animation-name: bubbleXAnimFrames;
+    animation-timing-function: ease;
+    animation-direction: alternate;
+}
+
+.bubble-animation-y {
+    animation-iteration-count: infinite;
+    animation-name: bubbleYAnimFrames;
+    animation-timing-function: linear;
+}
+
+@keyframes bubbleXAnimFrames {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(50px);
+    }
+}
+
+@keyframes bubbleYAnimFrames {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 85%;
+    }
+
+    100% {
+        transform: translateY(-1250px);
+        opacity: 0;
+    }
+}
+
+/* Bubble Explosion Effects */
+.bubble-large,
+.bubble-small {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.bubble-explosion-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 5;
+    transform: translate(-50%, -50%);
+}
+
+.bubble-explosion-particle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(96, 147, 195, 0.8) 0%, rgba(5, 94, 143, 0.4) 50%, transparent 100%);
+    box-shadow: 0 0 15px rgba(96, 147, 195, 0.6),
+        inset 0px 5px 15px 2px rgba(96, 147, 195, 0.5);
+    animation: bubble-explode 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes bubble-explode {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Slow motion / freeze state for transitions */
+.bubble-holder--slowed {
+    opacity: 0.4;
+    transition: opacity 300ms ease-out;
+}
+
+.bubble-holder--slowed .bubble-animation-x {
+    animation-duration: 8s !important;
+}
+
+.bubble-holder--slowed .bubble-animation-y {
+    animation-duration: 20s !important;
+}

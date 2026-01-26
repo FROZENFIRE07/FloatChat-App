@@ -1,0 +1,220 @@
+/**
+ * FloatChat App Styles - Redesigned
+ * Following UI Design System 1.0
+ */
+
+/* Import utilities */
+@import './styles/animations.css';
+@import './styles/accessibility.css';
+
+/* ========== APP LAYOUT ========== */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-primary);
+}
+
+/* ========== HEADER BAR ========== */
+
+.app-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-neutral-200);
+  box-shadow: var(--shadow-xs);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.app-logo {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+}
+
+.app-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.app-status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.app-status-indicator.healthy {
+  background: var(--color-success);
+}
+
+.app-status-indicator.unhealthy {
+  background: var(--color-error);
+}
+
+/* ========== MAIN CONTENT AREA ========== */
+
+.app-content {
+  display: flex;
+  min-height: calc(100vh - 64px);
+  flex: 1;
+}
+
+.content-main {
+  flex: 1;
+  padding: var(--space-6);
+  overflow-y: auto;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ========== ERROR MESSAGE ========== */
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(230, 106, 106, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  margin-bottom: var(--space-6);
+  animation: fadeInDown 300ms ease-out;
+}
+
+.error-message svg {
+  flex-shrink: 0;
+}
+
+.error-message span {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.error-message button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--color-error);
+  cursor: pointer;
+  padding: 0 var(--space-2);
+  transition: var(--transition-opacity);
+}
+
+.error-message button:hover {
+  opacity: 0.7;
+}
+
+/* ========== RESULTS CONTAINER ========== */
+
+.results-container {
+  animation: fadeInUp 400ms ease-out;
+}
+
+.results-container > * + * {
+  margin-top: var(--space-6);
+}
+
+/* ========== CHARTS GRID ========== */
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+/* ========== EMPTY STATE ========== */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-20) var(--space-6);
+  text-align: center;
+  animation: fadeIn 400ms ease-out 200ms backwards;
+}
+
+.empty-state svg {
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-4);
+}
+
+.empty-state h3 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  max-width: 500px;
+  line-height: var(--line-height-relaxed);
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+@media (max-width: 1024px) {
+  .app-content {
+    flex-direction: column;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 var(--space-4);
+  }
+  
+  .content-main {
+    padding: var(--space-4);
+  }
+  
+  .charts-grid {
+    gap: var(--space-4);
+  }
+  
+  .empty-state {
+    padding: var(--space-12) var(--space-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== UTILITY CLASSES ========== */
+
+.fade-in {
+  animation: fadeIn 300ms ease-out;
+}
+
+.fade-in-up {
+  animation: fadeInUp 400ms ease-out;
+}
+
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 200ms; }
+.stagger-4 { animation-delay: 300ms; }

@@ -1,0 +1,209 @@
+/**
+ * ChatResponse Styles
+ * 
+ * Design: Calm, scientific conversation interface
+ * Each response is a self-contained block
+ */
+
+.chat-response {
+  margin-bottom: var(--spacing-6);
+  animation: fadeInUp 300ms ease-out;
+}
+
+/* User Query (Echo) */
+.chat-response-query {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-3) var(--spacing-4);
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 2px solid var(--color-primary-400);
+  border-radius: var(--radius-md);
+}
+
+.query-marker {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-100);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.query-text {
+  color: var(--color-neutral-200);
+  font-size: 15px;
+  line-height: 1.6;
+  padding-top: 2px;
+}
+
+/* System Response */
+.chat-response-content {
+  position: relative;
+}
+
+/* Natural Language Explanation */
+.response-explanation {
+  display: flex;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background: rgba(74, 155, 159, 0.05);
+  border-left: 2px solid var(--color-secondary-500);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-4);
+}
+
+.explanation-marker {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-secondary-600);
+  color: var(--color-neutral-100);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.explanation-text {
+  flex: 1;
+  color: var(--color-neutral-200);
+  font-size: 15px;
+  line-height: 1.7;
+  padding-top: 2px;
+}
+
+.explanation-text p {
+  margin: 0;
+}
+
+/* Intent Summary Tags */
+.intent-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.intent-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: 4px var(--spacing-2);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.intent-label {
+  color: var(--color-neutral-400);
+  font-weight: 500;
+}
+
+.intent-value {
+  color: var(--color-secondary-300);
+  font-weight: 600;
+}
+
+/* Visualizations Container */
+.response-visualizations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  animation: fadeIn 200ms ease-out;
+}
+
+.viz-section {
+  background: rgba(10, 14, 39, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.viz-empty {
+  padding: var(--spacing-6);
+  text-align: center;
+  color: var(--color-neutral-400);
+  font-size: 14px;
+}
+
+/* Collapse/Expand Toggle */
+.response-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-400);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.response-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--color-neutral-300);
+}
+
+.response-toggle svg {
+  transition: transform 200ms ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chat-response {
+    margin-bottom: var(--spacing-5);
+  }
+
+  .chat-response-query,
+  .response-explanation {
+    padding: var(--spacing-3);
+  }
+
+  .query-text,
+  .explanation-text {
+    font-size: 14px;
+  }
+
+  .viz-section {
+    padding: var(--spacing-3);
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

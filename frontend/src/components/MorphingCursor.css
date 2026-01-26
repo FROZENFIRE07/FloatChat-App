@@ -1,0 +1,68 @@
+/* Morphing/Gooey Cursor Styles */
+
+.gooey-cursor-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 10000;
+    /* Gooey Effect Filter */
+    filter: url("#goo");
+    overflow: hidden;
+}
+
+#goo {
+    display: none;
+    /* Hide the SVG definition physically, used by filter ref */
+}
+
+.cursor-dot {
+    position: absolute;
+    display: block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    /* Light Blue / Cyan Bubble Color */
+    background-color: #67E8F9;
+    /* Add a slight glow for "bubble" feel */
+    box-shadow: 0 0 10px rgba(103, 232, 249, 0.4);
+    transform-origin: center center;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+}
+
+/* Explosion Effects */
+.explosion-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10001;
+    transform: translate(-50%, -50%);
+}
+
+.explosion-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #67E8F9 0%, #06B6D4 50%, transparent 100%);
+    box-shadow: 0 0 10px rgba(103, 232, 249, 0.8);
+    animation: explode 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes explode {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
+}

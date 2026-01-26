@@ -1,0 +1,155 @@
+/**
+ * FloatChat Design System - Design Tokens
+ * Version: 1.0
+ * Date: January 6, 2026
+ * 
+ * Core design variables following the UI Design System specification
+ */
+
+:root {
+  /* ========== COLOR SYSTEM ========== */
+  
+  /* Primary Colors - Deep Ocean Blue */
+  --color-primary: #1A4F6E;
+  --color-primary-light: #2A6B8F;
+  --color-primary-dark: #0D3A52;
+  --color-primary-hover: #1E5A7D;
+  
+  /* Secondary Colors - Muted Teal */
+  --color-secondary: #4A9B9F;
+  --color-secondary-light: #5CABAD;
+  --color-secondary-dark: #3A7F83;
+  
+  /* Neutral Colors - Soft Slate Gray */
+  --color-neutral-50: #F8F9FA;
+  --color-neutral-100: #F1F3F5;
+  --color-neutral-200: #E9ECEF;
+  --color-neutral-300: #DEE2E6;
+  --color-neutral-400: #CED4DA;
+  --color-neutral-500: #ADB5BD;
+  --color-neutral-600: #6C757D;
+  --color-neutral-700: #495057;
+  --color-neutral-800: #343A40;
+  --color-neutral-900: #212529;
+  
+  /* Accent Colors (Use Sparingly) */
+  --color-accent-coral: #E87461;
+  --color-accent-coral-hover: #F08574;
+  --color-accent-cyan: #4ECDC4;
+  --color-accent-cyan-hover: #5ED9D0;
+  
+  /* Background Colors - Off-white, not pure white */
+  --color-bg-primary: #FAFBFC;
+  --color-bg-secondary: #F4F6F8;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-overlay: rgba(26, 79, 110, 0.08);
+  
+  /* Text Colors - Dark gray, not black */
+  --color-text-primary: #2C3E50;
+  --color-text-secondary: #657786;
+  --color-text-tertiary: #8899A6;
+  --color-text-inverse: #FFFFFF;
+  --color-text-muted: #A8B5C1;
+  
+  /* Semantic Colors (muted, scientific) */
+  --color-success: #52C77A;
+  --color-warning: #F5A623;
+  --color-error: #E66A6A;
+  --color-info: #4A9B9F;
+  
+  /* ========== TYPOGRAPHY ========== */
+  
+  /* Font Families */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Font Sizes - Fluid Typography */
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12-14px */
+  --font-size-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);         /* 14-16px */
+  --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);      /* 16-18px */
+  --font-size-lg: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);          /* 18-24px */
+  --font-size-xl: clamp(1.5rem, 1.25rem + 1vw, 2rem);             /* 24-32px */
+  --font-size-2xl: clamp(2rem, 1.5rem + 2vw, 3rem);               /* 32-48px */
+  --font-size-3xl: clamp(2.5rem, 2rem + 2.5vw, 4rem);             /* 40-64px */
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-loose: 2;
+  
+  /* ========== SPACING SYSTEM (8px base) ========== */
+  
+  --space-1: 0.5rem;   /* 8px */
+  --space-2: 1rem;     /* 16px */
+  --space-3: 1.5rem;   /* 24px */
+  --space-4: 2rem;     /* 32px */
+  --space-5: 2.5rem;   /* 40px */
+  --space-6: 3rem;     /* 48px */
+  --space-8: 4rem;     /* 64px */
+  --space-10: 5rem;    /* 80px */
+  --space-12: 6rem;    /* 96px */
+  --space-16: 8rem;    /* 128px */
+  --space-20: 10rem;   /* 160px */
+  
+  /* ========== ELEVATION (Shadows) ========== */
+  
+  --shadow-xs: 0 1px 2px 0 rgba(26, 79, 110, 0.05);
+  --shadow-sm: 0 2px 4px 0 rgba(26, 79, 110, 0.08);
+  --shadow-md: 0 4px 12px 0 rgba(26, 79, 110, 0.12);
+  --shadow-lg: 0 8px 24px 0 rgba(26, 79, 110, 0.15);
+  --shadow-xl: 0 16px 48px 0 rgba(26, 79, 110, 0.18);
+  
+  /* Glass-like effect */
+  --shadow-glass: 0 8px 32px 0 rgba(26, 79, 110, 0.1),
+                  inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+  
+  /* ========== BORDER RADIUS ========== */
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* ========== TRANSITIONS (Always ease-out) ========== */
+  
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Specific properties */
+  --transition-opacity: opacity 250ms ease-out;
+  --transition-transform: transform 250ms ease-out;
+  --transition-colors: background-color 200ms ease-out, 
+                       color 200ms ease-out, 
+                       border-color 200ms ease-out;
+  --transition-all: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ========== RESPONSIVE BREAKPOINTS ========== */
+  
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* ========== Z-INDEX SCALE ========== */
+  
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+}

@@ -1,0 +1,56 @@
+/**
+ * AIInsightCard.css
+ * 
+ * Styling for micro-insight cards near visuals.
+ * Subtle, helpful, not dominating.
+ */
+
+.ai-insight-card {
+    background: rgba(74, 155, 159, 0.08);
+    border: 1px solid rgba(74, 155, 159, 0.15);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+}
+
+.insight-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+}
+
+.insight-header svg {
+    color: rgba(74, 155, 159, 0.7);
+}
+
+.insight-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(74, 155, 159, 0.8);
+}
+
+.insight-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+.insight-loading {
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ai-insight-card {
+        padding: 0.6rem 0.75rem;
+    }
+
+    .insight-text {
+        font-size: 0.8rem;
+    }
+}

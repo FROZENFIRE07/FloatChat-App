@@ -1,0 +1,32 @@
+# Render Web Service Configuration
+# https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: floatchat-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: USE_SUPABASE
+        value: true
+      - key: API_PREFIX
+        value: /api/v1
+      # The following must be set manually in Render dashboard (secrets)
+      - key: SUPABASE_DATABASE_URL
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: HF_INTENT_API_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

@@ -1,0 +1,152 @@
+.vertical-profile-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 12px;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-header {
+  text-align: center;
+}
+
+.view-header h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.float-info {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+}
+
+.float-info strong {
+  color: var(--accent-blue, #00d9ff);
+}
+
+.separator {
+  margin: 0 0.5rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* No Results */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.no-results-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.no-results p {
+  margin: 0.25rem 0;
+  color: var(--text-primary, #ffffff);
+}
+
+.no-results .hint {
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+  font-size: 0.9rem;
+}
+
+/* Profile Plots */
+.profile-plots {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-plot-container {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.variable-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary, #ffffff);
+  text-align: center;
+}
+
+.profile-plot {
+  width: 100%;
+  height: 400px;
+}
+
+/* Profile Summary */
+.profile-summary {
+  background: var(--bg-tertiary, rgba(255, 255, 255, 0.05));
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.profile-summary h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary, #ffffff);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  background: var(--bg-secondary, #1a1a2e);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.summary-cycle {
+  font-weight: 600;
+  color: var(--accent-blue, #00d9ff);
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.summary-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.stat-label {
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.stat-value {
+  color: var(--text-primary, #ffffff);
+  font-weight: 500;
+}

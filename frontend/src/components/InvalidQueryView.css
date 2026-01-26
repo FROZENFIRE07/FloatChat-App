@@ -1,0 +1,124 @@
+/**
+ * InvalidQueryView.css
+ * 
+ * Calm styling for invalid/weak query handling.
+ * No aggressive error colors — system stays composed.
+ */
+
+.invalid-query-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    padding: 2rem;
+    animation: invalidFadeIn 400ms ease-out;
+}
+
+@keyframes invalidFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.invalid-content {
+    max-width: 500px;
+    text-align: center;
+}
+
+/* Main message */
+.invalid-message {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 0 2rem;
+    line-height: 1.4;
+}
+
+/* Suggestions */
+.suggestions-container {
+    margin-bottom: 2rem;
+}
+
+.suggestions-intro {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 0.75rem;
+}
+
+.suggestions-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    display: inline-block;
+}
+
+.suggestions-list li {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.3rem 0;
+    padding-left: 1.25rem;
+    position: relative;
+}
+
+.suggestions-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: rgba(74, 155, 159, 0.6);
+}
+
+/* Examples */
+.examples-container {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.examples-intro {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 1rem;
+}
+
+.examples-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.example-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    text-align: left;
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.example-btn:hover {
+    background: rgba(74, 155, 159, 0.1);
+    border-color: rgba(74, 155, 159, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .invalid-query-view {
+        padding: 1.5rem;
+        min-height: 300px;
+    }
+
+    .invalid-message {
+        font-size: 1.1rem;
+    }
+}

@@ -1,0 +1,135 @@
+.value-distribution-container {
+  width: 100%;
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(26, 84, 144, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  margin-top: 20px;
+}
+
+.distribution-header {
+  padding: 16px;
+  background: rgba(26, 84, 144, 0.3);
+  border-bottom: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.distribution-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  color: #e8f4f8;
+  font-weight: 600;
+}
+
+.stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.stat-box {
+  padding: 12px;
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.3);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 18px;
+  color: #42a5f5;
+  font-weight: 600;
+}
+
+.plot-section {
+  padding: 16px;
+  border-bottom: 1px solid rgba(33, 150, 243, 0.2);
+}
+
+.plot-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #e8f4f8;
+  font-weight: 600;
+}
+
+.depth-distribution-section {
+  padding: 16px;
+  background: rgba(26, 84, 144, 0.2);
+}
+
+.depth-distribution-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #e8f4f8;
+  font-weight: 600;
+}
+
+.depth-bins {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.depth-bin {
+  display: grid;
+  grid-template-columns: 100px 1fr 60px;
+  gap: 12px;
+  align-items: center;
+}
+
+.bin-label {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.bin-bar-container {
+  height: 24px;
+  background: rgba(33, 150, 243, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bin-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1a5490, #42a5f5);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(66, 165, 245, 0.5);
+}
+
+.bin-count {
+  font-size: 14px;
+  color: #e8f4f8;
+  font-weight: 600;
+  text-align: right;
+}
+
+.distribution-footer {
+  padding: 12px 16px;
+  background: rgba(26, 84, 144, 0.15);
+  border-top: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.distribution-note {
+  margin: 0;
+  font-size: 14px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.no-data {
+  padding: 60px 20px;
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+}

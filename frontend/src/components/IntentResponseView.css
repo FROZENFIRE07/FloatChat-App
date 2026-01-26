@@ -1,0 +1,100 @@
+.intent-response-view {
+  width: 100%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Error State */
+.error-state,
+.unsupported-intent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 12px;
+}
+
+.error-icon,
+.unsupported-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.error-state h3,
+.unsupported-intent h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+}
+
+.error-state p,
+.unsupported-intent p {
+  margin: 0.25rem 0;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+  max-width: 400px;
+}
+
+.unsupported-intent code {
+  background: rgba(0, 217, 255, 0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  color: var(--accent-blue, #00d9ff);
+}
+
+.supported-list {
+  font-size: 0.85rem;
+  color: var(--text-tertiary, rgba(255, 255, 255, 0.5));
+  margin-top: 1rem !important;
+}
+
+.btn-retry {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent-blue, #00d9ff);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-retry:hover {
+  background: #33e0ff;
+  transform: translateY(-2px);
+}
+
+/* Intent-specific container styles */
+.intent-response-view.spatial-temporal {
+  /* Full width for map-based view */
+}
+
+.intent-response-view.nearest-float {
+  /* Map primary */
+}
+
+.intent-response-view.vertical-profile {
+  /* Plot primary */
+}
+
+.intent-response-view.aggregation {
+  /* Stats primary */
+}
+
+.intent-response-view.availability {
+  /* Coverage primary */
+}
