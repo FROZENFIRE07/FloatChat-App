@@ -115,8 +115,11 @@ function App() {
 
       // Check for invalid/weak intent
       // Backend returns 'variables' (array) not 'variable'
-      const hasVariable = intent?.variable || (intent?.variables && intent.variables.length > 0);
       const hasValidType = intent?.intent_type && intent.intent_type !== 'UNKNOWN';
+
+      // Variables are only required for specific query types
+      const variableRequired = ['SPATIAL_TEMPORAL_QUERY', 'AGGREGATION_QUERY'].includes(intent.intent_type);
+      const hasVariable = !variableRequired || (intent?.variable || (intent?.variables && intent.variables.length > 0));
 
       if (!intent || !hasValidType || !hasVariable) {
         console.log('❌ Invalid intent detected:', { hasVariable, hasValidType, intent });

@@ -245,8 +245,13 @@ class ChatService {
       return { valid: false, error: 'Intent must be an object', errorCode: 'INVALID_FORMAT' };
     }
 
-    // Get intent type
-    const intentType = rawIntent.intent_type?.toUpperCase?.()?.replace(/-/g, '_')?.replace(/ /g, '_');
+    // Get intent type and normalize synonyms
+    let intentType = rawIntent.intent_type?.toUpperCase?.()?.replace(/-/g, '_')?.replace(/ /g, '_');
+
+    // Normalize AI inconsistencies
+    if (intentType === 'AVAILABILITY_COVERAGE_QUERY') intentType = 'DATA_AVAILABILITY_QUERY';
+    if (intentType === 'FLOAT_DISCOVERY_QUERY') intentType = 'NEAREST_FLOAT_QUERY';
+
     if (!intentType || !INTENT_SCHEMAS[intentType]) {
       return {
         valid: false,
