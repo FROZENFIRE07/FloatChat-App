@@ -195,9 +195,11 @@ class ArgoDataServiceSupabase {
             throw new Error(`Query failed: ${error.message}`);
         }
 
-        // Add approximate distance and sort
+        // Add approximate distance and sort, and normalize fields for frontend
         const resultsWithDistance = (results || []).map(r => ({
             ...r,
+            latitude: r.last_latitude,
+            longitude: r.last_longitude,
             approx_distance: Math.abs(r.last_latitude - latitude) + Math.abs(r.last_longitude - longitude)
         })).sort((a, b) => a.approx_distance - b.approx_distance);
 
