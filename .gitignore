@@ -68,12 +68,16 @@ argo_database.db
 # ===============================
 # Coordinate/Shapefile Data (too large for GitHub)
 # ===============================
-# Natural Earth data - already in repo, but exclude future additions
-coordinates_algo/
-coordinates_algo/ne_*/
-coordinates_algo/*.shp
-coordinates_algo/*.dbf
-coordinates_algo/*.shx
+# Keep coordinates_algo/ in repo for Render deployment
+
+# ===============================
+# CSV Data Files (now in Supabase - too large for GitHub)
+# ===============================
+argo_floats.csv
+argo_profiles.csv
+
+# Supabase connection (contains secrets)
+supabase_connection.txt
 
 # ===============================
 # Logs

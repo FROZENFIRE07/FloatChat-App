@@ -34,6 +34,8 @@ class ArgoDataService {
    * @param {string} params.timeStart - Start timestamp (ISO format)
    * @param {string} params.timeEnd - End timestamp (ISO format)
    * @param {number} params.limit - Maximum number of results (default: 1000)
+   * @param {Object} params.centroid - Optional: { lat, lon } for circular filtering
+   * @param {number} params.radiusKm - Optional: Radius in km for circular filtering
    */
   static getRegionData(params) {
     const {
@@ -43,7 +45,9 @@ class ArgoDataService {
       lonMax,
       timeStart,
       timeEnd,
-      limit = 1000
+      limit = 1000,
+      centroid = null,  // For circular (Haversine) filtering
+      radiusKm = null   // Radius in kilometers
     } = params;
 
     const db = argoDb.getDatabase();
@@ -77,13 +81,38 @@ class ArgoDataService {
 
     // 🚨 CRITICAL: Normalize longitude (0-360 → -180...+180)
     // ARGO data may use 0-360 format, must normalize before filtering
-    const normalizedResults = results.map(row => ({
+    let normalizedResults = results.map(row => ({
       ...row,
       longitude: row.longitude > 180 ? row.longitude - 360 : row.longitude
     }));
 
+    // 🎯 HAVERSINE POST-FILTER: For circular (landmark) queries
+    // When centroid + radiusKm provided, filter by true distance, not bbox
+    if (centroid && radiusKm) {
+      const EARTH_RADIUS_KM = 6371;
+
+      const haversineDistance = (lat1, lon1, lat2, lon2) => {
+        const toRad = (deg) => deg * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
+      };
+
+      const beforeCount = normalizedResults.length;
+      normalizedResults = normalizedResults.filter(row => {
+        const dist = haversineDistance(centroid.lat, centroid.lon, row.latitude, row.longitude);
+        return dist <= radiusKm;
+      });
+
+      console.log(`[ArgoDataService] 🎯 Haversine filter: ${beforeCount} → ${normalizedResults.length} (within ${radiusKm}km of ${centroid.lat.toFixed(2)}, ${centroid.lon.toFixed(2)})`);
+    }
+
     // 🚨 DEV MODE ASSERTION: Verify all results are within bbox
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && !centroid) {
       normalizedResults.forEach(row => {
         if (row.latitude < latMin || row.latitude > latMax ||
           row.longitude < lonMin || row.longitude > lonMax) {
@@ -648,6 +677,187 @@ class ArgoDataService {
         min: Math.min(...salts),
         max: Math.max(...salts)
       } : null
+    };
+  }
+
+  /**
+   * Query 9: Count floats and profiles in bounding box (cheap pre-filter)
+   * 
+   * Used by dynamic radius service to quickly assess data density.
+   * This is optimized for speed - no data retrieval, just counts.
+   * 
+   * @param {Object} bbox - { latMin, latMax, lonMin, lonMax }
+   * @param {Object} timeRange - Optional { start, end }
+   * @returns {Object} { floatCount, profileCount }
+   */
+  static countFloatsInBbox(bbox, timeRange = null) {
+    const { latMin, latMax, lonMin, lonMax } = bbox;
+    const db = argoDb.getDatabase();
+
+    let query;
+    let params;
+
+    if (timeRange && timeRange.start && timeRange.end) {
+      query = db.prepare(`
+        SELECT 
+          COUNT(DISTINCT float_id) as floatCount,
+          COUNT(*) as profileCount
+        FROM argo_profiles
+        WHERE latitude BETWEEN ? AND ?
+          AND longitude BETWEEN ? AND ?
+          AND timestamp BETWEEN ? AND ?
+      `);
+      params = [latMin, latMax, lonMin, lonMax, timeRange.start, timeRange.end];
+    } else {
+      query = db.prepare(`
+        SELECT 
+          COUNT(DISTINCT float_id) as floatCount,
+          COUNT(*) as profileCount
+        FROM argo_profiles
+        WHERE latitude BETWEEN ? AND ?
+          AND longitude BETWEEN ? AND ?
+      `);
+      params = [latMin, latMax, lonMin, lonMax];
+    }
+
+    const result = query.get(...params);
+
+    return {
+      floatCount: result.floatCount || 0,
+      profileCount: result.profileCount || 0
+    };
+  }
+
+  /**
+   * Query 10: Get floats near a landmark with adaptive filtering
+   * 
+   * Two-phase approach for performance:
+   * 1. Bounding box pre-filter (fast, removes ~80-90% of data)
+   * 2. Haversine distance filter (precise, on reduced set)
+   * 
+   * @param {Object} params - Query parameters
+   * @param {number} params.centerLat - Center latitude
+   * @param {number} params.centerLon - Center longitude
+   * @param {number} params.radiusKm - Search radius in kilometers
+   * @param {Object} params.timeRange - Optional { start, end }
+   * @param {number} params.limit - Maximum results (default: 1000)
+   * @returns {Object} Result with floats and spatial metadata
+   */
+  static getNearbyFloatsFromLandmark(params) {
+    const {
+      centerLat,
+      centerLon,
+      radiusKm,
+      timeRange = null,
+      limit = 1000
+    } = params;
+
+    const db = argoDb.getDatabase();
+
+    // Convert km to degrees for bounding box (approximate)
+    const KM_PER_DEGREE_LAT = 111.32;
+    const KM_PER_DEGREE_LON = 111.32 * Math.cos(centerLat * Math.PI / 180);
+
+    const latDelta = radiusKm / KM_PER_DEGREE_LAT;
+    const lonDelta = radiusKm / KM_PER_DEGREE_LON;
+
+    const bbox = {
+      latMin: centerLat - latDelta,
+      latMax: centerLat + latDelta,
+      lonMin: centerLon - lonDelta,
+      lonMax: centerLon + lonDelta
+    };
+
+    console.log(`[ArgoDataService] Landmark search: center=(${centerLat.toFixed(3)}, ${centerLon.toFixed(3)}), radius=${radiusKm}km, bbox delta=(${latDelta.toFixed(3)}, ${lonDelta.toFixed(3)})`);
+
+    // Phase 1: Bounding box pre-filter (cheap)
+    let query;
+    let queryParams;
+
+    if (timeRange && timeRange.start && timeRange.end) {
+      query = db.prepare(`
+        SELECT DISTINCT
+          f.float_id,
+          f.last_latitude as latitude,
+          f.last_longitude as longitude,
+          f.first_timestamp,
+          f.last_timestamp,
+          f.total_profiles
+        FROM argo_floats f
+        WHERE f.last_latitude BETWEEN ? AND ?
+          AND f.last_longitude BETWEEN ? AND ?
+          AND f.last_timestamp >= ?
+          AND f.first_timestamp <= ?
+        ORDER BY f.total_profiles DESC
+        LIMIT ?
+      `);
+      queryParams = [
+        bbox.latMin, bbox.latMax,
+        bbox.lonMin, bbox.lonMax,
+        timeRange.start, timeRange.end,
+        limit * 2 // Fetch more for precise filtering
+      ];
+    } else {
+      query = db.prepare(`
+        SELECT 
+          float_id,
+          last_latitude as latitude,
+          last_longitude as longitude,
+          first_timestamp,
+          last_timestamp,
+          total_profiles
+        FROM argo_floats
+        WHERE last_latitude BETWEEN ? AND ?
+          AND last_longitude BETWEEN ? AND ?
+        ORDER BY total_profiles DESC
+        LIMIT ?
+      `);
+      queryParams = [
+        bbox.latMin, bbox.latMax,
+        bbox.lonMin, bbox.lonMax,
+        limit * 2
+      ];
+    }
+
+    const preFilteredResults = query.all(...queryParams);
+    console.log(`[ArgoDataService] Bbox pre-filter: ${preFilteredResults.length} candidates`);
+
+    // Phase 2: Haversine distance filter (precise)
+    const R = 6371; // Earth radius in km
+    const toRad = (deg) => deg * Math.PI / 180;
+
+    const resultsWithDistance = preFilteredResults
+      .map(row => {
+        const dLat = toRad(row.latitude - centerLat);
+        const dLon = toRad(row.longitude - centerLon);
+        const a = Math.sin(dLat / 2) ** 2 +
+          Math.cos(toRad(centerLat)) * Math.cos(toRad(row.latitude)) *
+          Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distanceKm = R * c;
+
+        return {
+          ...row,
+          distanceKm: Math.round(distanceKm * 10) / 10
+        };
+      })
+      .filter(row => row.distanceKm <= radiusKm)
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+      .slice(0, limit);
+
+    console.log(`[ArgoDataService] Haversine filter: ${resultsWithDistance.length} within ${radiusKm}km`);
+
+    return {
+      success: true,
+      data: resultsWithDistance,
+      metadata: {
+        count: resultsWithDistance.length,
+        searchCenter: { latitude: centerLat, longitude: centerLon },
+        radiusKm: radiusKm,
+        bbox: bbox,
+        preFilterCount: preFilteredResults.length,
+        timeRange: timeRange
+      }
     };
   }
 }

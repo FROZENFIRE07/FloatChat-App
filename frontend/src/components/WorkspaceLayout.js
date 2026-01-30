@@ -43,15 +43,41 @@ export default function WorkspaceLayout({
 
     const hasVisualizationData = data && data.length > 0;
 
-    const regionMap = {
-        arabian_sea: { latMin: 8, latMax: 25, lonMin: 50, lonMax: 75 },
-        bay_of_bengal: { latMin: 5, latMax: 22, lonMin: 80, lonMax: 95 },
-        indian_ocean: { latMin: -30, latMax: 30, lonMin: 40, lonMax: 100 }
-    };
+    // Region boundary for map - prioritize spatialMeta from backend
+    // This enables circle visualization for landmark queries (cities, ports)
+    const regionBounds = React.useMemo(() => {
+        // For landmark queries (cities, ports), use spatialMeta with centroid and radius
+        if (intent?.spatialMeta) {
+            const meta = intent.spatialMeta;
+            console.log('🎯 WorkspaceLayout: Using spatialMeta for region', meta);
+            return {
+                // Include bbox coords for map bounds calculation
+                latMin: intent.region?.latMin || null,
+                latMax: intent.region?.latMax || null,
+                lonMin: intent.region?.lonMin || null,
+                lonMax: intent.region?.lonMax || null,
+                // Include spatialMeta for circle rendering
+                centroid: meta.centroid,
+                adaptiveRadiusKm: meta.adaptiveRadiusKm,
+                displayName: meta.displayName,
+                isOceanRegion: meta.isOceanRegion,
+                source: meta.source
+            };
+        }
 
-    const regionBounds = intent?.region_semantic && regionMap[intent.region_semantic]
-        ? regionMap[intent.region_semantic]
-        : intent?.region || null;
+        // For ocean queries, use semantic region names
+        const regionMap = {
+            arabian_sea: { latMin: 8, latMax: 25, lonMin: 50, lonMax: 75 },
+            bay_of_bengal: { latMin: 5, latMax: 22, lonMin: 80, lonMax: 95 },
+            indian_ocean: { latMin: -30, latMax: 30, lonMin: 40, lonMax: 100 }
+        };
+
+        if (intent?.region_semantic && regionMap[intent.region_semantic]) {
+            return regionMap[intent.region_semantic];
+        }
+
+        return intent?.region || null;
+    }, [intent?.spatialMeta, intent?.region_semantic, intent?.region]);
 
     const variable = intent?.variable || (intent?.variables && intent.variables[0]) || 'temperature';
 

@@ -14,6 +14,7 @@ const ArgoDataService = require('../services/argoDataService');
  * 
  * GET /api/v1/argo/region
  * Query params: latMin, latMax, lonMin, lonMax, timeStart, timeEnd, limit
+ * Optional: centroidLat, centroidLon, radiusKm (for circular Haversine filtering)
  */
 exports.getRegionData = async (req, res, next) => {
   try {
@@ -26,6 +27,16 @@ exports.getRegionData = async (req, res, next) => {
       timeEnd: req.query.timeEnd,
       limit: parseInt(req.query.limit) || 1000
     };
+
+    // 🎯 Optional circular (Haversine) filter for landmark queries
+    if (req.query.centroidLat && req.query.centroidLon && req.query.radiusKm) {
+      params.centroid = {
+        lat: parseFloat(req.query.centroidLat),
+        lon: parseFloat(req.query.centroidLon)
+      };
+      params.radiusKm = parseFloat(req.query.radiusKm);
+      console.log('🎯 Circular filter enabled:', { centroid: params.centroid, radiusKm: params.radiusKm });
+    }
 
     console.log('Region query params:', params); // Debug log
     const result = await ArgoDataService.getRegionData(params);

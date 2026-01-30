@@ -18,6 +18,7 @@ const router = express.Router();
  * @desc    Get ARGO data for a geographic region and time window
  * @access  Public
  * @query   latMin, latMax, lonMin, lonMax, timeStart, timeEnd, limit
+ * @query   centroidLat, centroidLon, radiusKm (optional - for circular Haversine filtering)
  */
 router.get(
   '/region',
@@ -29,6 +30,10 @@ router.get(
     query('timeStart').isISO8601().withMessage('Invalid timeStart format'),
     query('timeEnd').isISO8601().withMessage('Invalid timeEnd format'),
     query('limit').optional().isInt({ min: 1, max: 100000 }).withMessage('Invalid limit'),
+    // Optional circular (Haversine) filter params
+    query('centroidLat').optional().isFloat({ min: -90, max: 90 }).withMessage('Invalid centroidLat'),
+    query('centroidLon').optional().isFloat({ min: -180, max: 180 }).withMessage('Invalid centroidLon'),
+    query('radiusKm').optional().isFloat({ min: 1, max: 1000 }).withMessage('Invalid radiusKm'),
     validate
   ],
   argoController.getRegionData

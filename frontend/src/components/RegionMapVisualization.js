@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Rectangle, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Circle, Rectangle, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './RegionMapVisualization.css';
 
@@ -221,8 +221,8 @@ export default function RegionMapVisualization({
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
 
-        {/* Region boundary (subtle highlight) */}
-        {regionBounds && (
+        {/* Region boundary - Rectangle for ocean regions, Circle for landmarks */}
+        {regionBounds && !region?.centroid && (
           <Rectangle
             bounds={regionBounds}
             pathOptions={{
@@ -233,6 +233,29 @@ export default function RegionMapVisualization({
               dashArray: '5, 10'
             }}
           />
+        )}
+
+        {/* Circle for landmark queries (cities, ports) with adaptive radius */}
+        {region?.centroid && region?.adaptiveRadiusKm && (
+          <Circle
+            center={[region.centroid.lat, region.centroid.lon]}
+            radius={region.adaptiveRadiusKm * 1000} // Convert km to meters
+            pathOptions={{
+              color: '#ff6f61',
+              weight: 2,
+              fillColor: '#ff6f61',
+              fillOpacity: 0.08,
+              dashArray: '8, 8'
+            }}
+          >
+            <Tooltip direction="top" permanent={false} opacity={0.9}>
+              <div style={{ textAlign: 'center' }}>
+                <strong>Search Area</strong><br />
+                {region.adaptiveRadiusKm} km radius from<br />
+                {region.displayName?.split(',')[0] || 'landmark'}
+              </div>
+            </Tooltip>
+          </Circle>
         )}
 
         {/* ARGO float markers */}
@@ -262,7 +285,7 @@ export default function RegionMapVisualization({
               onFloatClick={onFloatClick}
             />
           );
-        })}uniqueFloatPositions.length} float position{uniqueFloatPositions.length !== 1 ? 's' : ''} ({displayFloats.length} total profiles)
+        })}
       </MapContainer>
 
       {/* Data count indicator */}

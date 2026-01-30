@@ -20,7 +20,7 @@ import './Category1ExplorationMode.css';
  * - Empty states handled gracefully
  */
 
-export default function Category1ExplorationMode({ 
+export default function Category1ExplorationMode({
   query,
   intent,
   floats = [],
@@ -32,17 +32,17 @@ export default function Category1ExplorationMode({
   const [showRawData, setShowRawData] = useState(false);
   const [filteredFloats, setFilteredFloats] = useState(null);
   const [selectedFloat, setSelectedFloat] = useState(null);
-  
+
   // Memoize floats to prevent infinite renders
   const memoizedFloats = React.useMemo(() => floats, [JSON.stringify(floats)]);
-  
-  console.log('📍 Category1 render:', { 
+
+  console.log('📍 Category1 render:', {
     floatsCount: floats.length,
     isConfirmed: isIntentConfirmed,
     hasFiltered: filteredFloats !== null,
     filteredCount: filteredFloats?.length
   });
-  
+
   // Extract intent parameters
   const variable = intent?.variable || 'temperature';
   const region = React.useMemo(() => {
@@ -50,16 +50,39 @@ export default function Category1ExplorationMode({
   }, [intent?.region]);
   const regionSemantic = intent?.region_semantic || null;
 
-  // Region boundary for map
-  const regionMap = {
-    arabian_sea: { latMin: 8, latMax: 25, lonMin: 50, lonMax: 75 },
-    bay_of_bengal: { latMin: 5, latMax: 22, lonMin: 80, lonMax: 95 },
-    indian_ocean: { latMin: -30, latMax: 30, lonMin: 40, lonMax: 100 }
-  };
-  
-  const regionBounds = regionSemantic && regionMap[regionSemantic]
-    ? regionMap[regionSemantic]
-    : region;
+  // Region boundary for map - prioritize spatialMeta from backend
+  // This enables circle visualization for landmark queries
+  const regionBounds = React.useMemo(() => {
+    // First check if backend provided spatialMeta (for landmark queries like "near Mumbai")
+    if (intent?.spatialMeta) {
+      const meta = intent.spatialMeta;
+      return {
+        latMin: region?.latMin,
+        latMax: region?.latMax,
+        lonMin: region?.lonMin,
+        lonMax: region?.lonMax,
+        centroid: meta.centroid,
+        adaptiveRadiusKm: meta.adaptiveRadiusKm,
+        displayName: meta.displayName,
+        isOceanRegion: meta.isOceanRegion,
+        source: meta.source
+      };
+    }
+
+    // Fallback to explicit region from intent (ocean queries)
+    if (region) {
+      return region;
+    }
+
+    // Legacy fallback for semantic region names (should rarely be used now)
+    const regionMap = {
+      arabian_sea: { latMin: 8, latMax: 25, lonMin: 50, lonMax: 75 },
+      bay_of_bengal: { latMin: 5, latMax: 22, lonMin: 80, lonMax: 95 },
+      indian_ocean: { latMin: -30, latMax: 30, lonMin: 40, lonMax: 100 }
+    };
+
+    return regionSemantic && regionMap[regionSemantic] ? regionMap[regionSemantic] : null;
+  }, [intent?.spatialMeta, region, regionSemantic]);
 
   // Check if query is unsupported (causal, predictive, interpretive)
   const unsupportedPatterns = [
@@ -74,7 +97,7 @@ export default function Category1ExplorationMode({
     /explain/i,
     /interpretation/i
   ];
-  
+
   const isUnsupported = unsupportedPatterns.some(pattern => pattern.test(query));
 
   // Handle intent confirmation
@@ -85,24 +108,24 @@ export default function Category1ExplorationMode({
   // Handle time range change from slider
   const handleTimeRangeChange = React.useCallback(({ start, end }) => {
     if (!memoizedFloats || memoizedFloats.length === 0) return;
-    
+
     const filtered = memoizedFloats.filter(float => {
       const timeField = float.time || float.timestamp;
       if (!timeField) return false;
-      
+
       // Parse timestamp (handle both ISO and SQLite datetime formats)
       const floatTime = new Date(timeField).getTime();
       if (isNaN(floatTime)) return false;
-      
+
       return floatTime >= start.getTime() && floatTime <= end.getTime();
     });
-    
-    console.log('⏰ Time filter:', { 
-      total: memoizedFloats.length, 
+
+    console.log('⏰ Time filter:', {
+      total: memoizedFloats.length,
       filtered: filtered.length,
       range: { start: start.toISOString(), end: end.toISOString() }
     });
-    
+
     setFilteredFloats(filtered);
   }, [memoizedFloats]);
 
@@ -131,7 +154,7 @@ export default function Category1ExplorationMode({
       <div className="exploration-content">
         {/* Header with query */}
         <div className="exploration-header">
-          <button 
+          <button
             className="btn-back"
             onClick={onBack}
             aria-label="Back to landing"
@@ -218,7 +241,7 @@ export default function Category1ExplorationMode({
 
                     {/* Raw Data Access */}
                     <div className="raw-data-access">
-                      <button 
+                      <button
                         className="btn-view-raw-data"
                         onClick={() => setShowRawData(true)}
                       >

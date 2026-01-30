@@ -358,7 +358,8 @@ class ChatService {
   }
 
   /**
-   * Map semantic region names to coordinates using geospatial datasets
+   * Map semantic region names to coordinates using geospatial datasets (sync)
+   * Kept for backward compatibility
    */
   getRegionCoordinates(regionSemantic) {
     // Use deterministic spatial resolver (loads from local GeoJSON)
@@ -368,16 +369,69 @@ class ChatService {
       return bbox;
     }
 
-    // Fallback to hardcoded map if resolver fails (temporary)
-    console.warn(`[ChatService] Spatial resolver failed for "${regionSemantic}", using fallback`);
-    const regionMap = {
-      'arabian_sea': { latMin: 8, latMax: 25, lonMin: 50, lonMax: 75 },
-      'bay_of_bengal': { latMin: 5, latMax: 22, lonMin: 80, lonMax: 95 },
-      'indian_ocean': { latMin: -30, latMax: 30, lonMin: 40, lonMax: 100 },
-      'equatorial': { latMin: -10, latMax: 10, lonMin: 40, lonMax: 100 },
-      'global': { latMin: -90, latMax: 90, lonMin: -180, lonMax: 180 }
-    };
-    return regionMap[regionSemantic?.toLowerCase()] || null;
+    // No more hardcoded fallbacks - return null to trigger async resolution
+    console.warn(`[ChatService] Sync resolution failed for "${regionSemantic}", try async method`);
+    return null;
+  }
+
+  /**
+   * Map semantic region names to coordinates (async version with geocoding)
+   * 
+   * This is the preferred method - uses GeoJSON for seas/oceans,
+   * then falls back to Nominatim geocoding for cities/landmarks.
+   * 
+   * @param {string} regionSemantic - Region name (e.g., "Mumbai", "Arabian Sea")
+   * @returns {Object|null} { latMin, latMax, lonMin, lonMax, centroid, source, displayName }
+   */
+  async getRegionCoordinatesAsync(regionSemantic) {
+    const result = await spatialResolver.resolveWithGeocode(regionSemantic);
+
+    if (result) {
+      console.log(`[ChatService] Async resolved "${regionSemantic}" via ${result.source}`);
+      return result;
+    }
+
+    // Check if query is ambiguous
+    const ambiguity = spatialResolver.checkAmbiguity(regionSemantic);
+    if (ambiguity.ambiguous) {
+      console.warn(`[ChatService] Ambiguous query: ${ambiguity.reason}`);
+    }
+
+    return null;
+  }
+
+  /**
+   * Build spatial explanation for transparency in results
+   * @param {Object} spatialResult - Result from getRegionCoordinatesAsync (with optional adaptiveRadiusKm)
+   * @param {Object} radiusInfo - Optional radius info for landmark queries (legacy)
+   * @returns {string} Human-readable explanation
+   */
+  buildSpatialExplanation(spatialResult, radiusInfo = null) {
+    if (!spatialResult) return null;
+
+    const locationName = spatialResult.displayName || 'the specified region';
+    const source = spatialResult.source === 'nominatim' ? 'geocoding' : 'ocean database';
+
+    // Check for adaptive radius in spatialResult (new approach)
+    if (spatialResult.adaptiveRadiusKm) {
+      return `Floats were selected within an adaptive radius (≈${spatialResult.adaptiveRadiusKm} km) from ${locationName}, ` +
+        `ensuring coverage of nearby ocean areas. Location resolved via ${source}.`;
+    }
+
+    if (radiusInfo) {
+      if (radiusInfo.sparse) {
+        return `Floats were searched within a maximum radius (${radiusInfo.radiusKm} km) from ${locationName}. ` +
+          `This region appears to have sparse ocean data coverage (${radiusInfo.floatCount} floats found).`;
+      }
+      return `Floats were selected within an adaptive radius (≈${radiusInfo.radiusKm} km) from ${locationName}, ` +
+        `ensuring sufficient observations for reliable statistics. Location resolved via ${source}.`;
+    }
+
+    if (spatialResult.isOceanRegion) {
+      return `Data filtered for ${locationName} using predefined ocean boundaries.`;
+    }
+
+    return `Data filtered near ${locationName}, resolved via ${source}.`;
   }
 
   /**
@@ -464,6 +518,137 @@ class ChatService {
   }
 
   /**
+   * Map validated intent to backend API parameters (async version)
+   * 
+   * Uses async geocoding for landmark resolution.
+   * This is the preferred method for processing queries.
+   * 
+   * @param {Object} intent - Validated intent object
+   * @returns {Object} { endpoint, params, intentType, spatialMeta }
+   */
+  async mapIntentToApiParamsAsync(intent) {
+    const intentType = intent.intent_type;
+    const params = {};
+    let spatialMeta = null;
+
+    // 🚨 CRITICAL: If region_semantic is present but no explicit coordinates, resolve it
+    // Now uses async geocoding with Nominatim fallback
+    if (intent.region_semantic && intent.latitude_min === undefined) {
+      console.log('[ChatService] Resolving region_semantic (async):', intent.region_semantic);
+
+      const regionCoords = await this.getRegionCoordinatesAsync(intent.region_semantic);
+
+      // 🚨 FAIL FAST: Cannot execute spatial query without bbox
+      if (!regionCoords) {
+        const error = new Error(
+          `Spatial resolution failed for region: "${intent.region_semantic}". ` +
+          `Cannot execute spatial query without valid bounding box. ` +
+          `Please check region name or specify explicit coordinates.`
+        );
+        error.code = 'SPATIAL_RESOLUTION_FAILED';
+        throw error;
+      }
+
+      console.log('[ChatService] Resolved bbox (async):', regionCoords);
+
+      // 🌊 ADAPTIVE RADIUS FOR LANDMARKS (cities, ports)
+      // Ocean regions use their full bbox, but landmarks need expanded search
+      // to find nearby ocean floats
+      if (!regionCoords.isOceanRegion && regionCoords.centroid) {
+        // Default search radius for landmarks: 300km
+        // This covers coastal areas and nearby ocean
+        const DEFAULT_LANDMARK_RADIUS_KM = 300;
+        const KM_PER_DEGREE_LAT = 111.32;
+        const KM_PER_DEGREE_LON = 111.32 * Math.cos(regionCoords.centroid.lat * Math.PI / 180);
+
+        const latDelta = DEFAULT_LANDMARK_RADIUS_KM / KM_PER_DEGREE_LAT;
+        const lonDelta = DEFAULT_LANDMARK_RADIUS_KM / KM_PER_DEGREE_LON;
+
+        params.latMin = regionCoords.centroid.lat - latDelta;
+        params.latMax = regionCoords.centroid.lat + latDelta;
+        params.lonMin = regionCoords.centroid.lon - lonDelta;
+        params.lonMax = regionCoords.centroid.lon + lonDelta;
+
+        console.log(`[ChatService] 🎯 Applied adaptive radius (${DEFAULT_LANDMARK_RADIUS_KM}km) for landmark "${intent.region_semantic}"`);
+        console.log(`[ChatService] Expanded bbox: lat[${params.latMin.toFixed(2)}, ${params.latMax.toFixed(2)}] lon[${params.lonMin.toFixed(2)}, ${params.lonMax.toFixed(2)}]`);
+
+        // Store spatial metadata with radius info
+        spatialMeta = {
+          centroid: regionCoords.centroid,
+          source: regionCoords.source,
+          displayName: regionCoords.displayName,
+          isOceanRegion: regionCoords.isOceanRegion,
+          adaptiveRadiusKm: DEFAULT_LANDMARK_RADIUS_KM
+        };
+      } else {
+        // Ocean region - use the full bbox from GeoJSON
+        params.latMin = regionCoords.latMin;
+        params.latMax = regionCoords.latMax;
+        params.lonMin = regionCoords.lonMin;
+        params.lonMax = regionCoords.lonMax;
+
+        // Store spatial metadata for explanation
+        spatialMeta = {
+          centroid: regionCoords.centroid,
+          source: regionCoords.source,
+          displayName: regionCoords.displayName,
+          isOceanRegion: regionCoords.isOceanRegion
+        };
+      }
+    }
+
+    switch (intentType) {
+      case 'SPATIAL_TEMPORAL_QUERY':
+        if (intent.latitude_min !== undefined) params.latMin = intent.latitude_min;
+        if (intent.latitude_max !== undefined) params.latMax = intent.latitude_max;
+        if (intent.longitude_min !== undefined) params.lonMin = intent.longitude_min;
+        if (intent.longitude_max !== undefined) params.lonMax = intent.longitude_max;
+        if (intent.start_date) params.timeStart = this.formatDate(intent.start_date);
+        if (intent.end_date) params.timeEnd = this.formatDate(intent.end_date, true);
+        if (intent.limit) params.limit = intent.limit;
+        break;
+
+      case 'VERTICAL_PROFILE_QUERY':
+        params.floatId = intent.float_id;
+        if (intent.cycle_number) params.cycle = intent.cycle_number;
+        break;
+
+      case 'NEAREST_FLOAT_QUERY':
+        params.latitude = intent.latitude;
+        params.longitude = intent.longitude;
+        if (intent.radius_degrees) params.radius = intent.radius_degrees;
+        if (intent.limit) params.limit = intent.limit;
+        break;
+
+      case 'DATA_AVAILABILITY_QUERY':
+        if (intent.latitude_min !== undefined) params.latMin = intent.latitude_min;
+        if (intent.latitude_max !== undefined) params.latMax = intent.latitude_max;
+        if (intent.longitude_min !== undefined) params.lonMin = intent.longitude_min;
+        if (intent.longitude_max !== undefined) params.lonMax = intent.longitude_max;
+        if (intent.start_date) params.timeStart = this.formatDate(intent.start_date);
+        if (intent.end_date) params.timeEnd = this.formatDate(intent.end_date, true);
+        break;
+
+      case 'AGGREGATION_QUERY':
+        if (intent.latitude_min !== undefined) params.latMin = intent.latitude_min;
+        if (intent.latitude_max !== undefined) params.latMax = intent.latitude_max;
+        if (intent.longitude_min !== undefined) params.lonMin = intent.longitude_min;
+        if (intent.longitude_max !== undefined) params.lonMax = intent.longitude_max;
+        if (intent.start_date) params.timeStart = this.formatDate(intent.start_date);
+        if (intent.end_date) params.timeEnd = this.formatDate(intent.end_date, true);
+        if (intent.variables?.length) params.variable = intent.variables[0];
+        break;
+    }
+
+    return {
+      endpoint: INTENT_API_MAP[intentType],
+      params,
+      intentType,
+      spatialMeta
+    };
+  }
+
+  /**
    * Format date string to ISO format
    * Handles month-year formats like "Jan 2019", "January 2019"
    * Returns { start, end } for month-year or single date string for specific dates
@@ -532,7 +717,7 @@ class ChatService {
 
   /**
    * Process a chat query end-to-end
-   * Returns: { success, intent, apiMapping, error }
+   * Returns: { success, intent, apiMapping, spatialExplanation, error }
    */
   async processQuery(question) {
     console.log('[ChatService DEBUG] Input question:', question);
@@ -564,15 +749,39 @@ class ChatService {
       };
     }
 
-    // Step 3: Map to API parameters
-    const apiMapping = this.mapIntentToApiParams(validationResult.intent);
-    console.log('[ChatService DEBUG] API mapping:', JSON.stringify(apiMapping, null, 2));
+    // Step 3: Map to API parameters (now async with geocoding)
+    let apiMapping;
+    try {
+      apiMapping = await this.mapIntentToApiParamsAsync(validationResult.intent);
+      console.log('[ChatService DEBUG] API mapping:', JSON.stringify(apiMapping, null, 2));
+    } catch (error) {
+      // Handle spatial resolution failures gracefully
+      if (error.code === 'SPATIAL_RESOLUTION_FAILED') {
+        console.error('[ChatService DEBUG] Spatial resolution failed:', error.message);
+        return {
+          success: false,
+          rawIntent,
+          intent: validationResult.intent,
+          error: error.message,
+          errorCode: 'SPATIAL_RESOLUTION_FAILED'
+        };
+      }
+      throw error;
+    }
+
+    // Step 4: Build spatial explanation if applicable
+    let spatialExplanation = null;
+    if (apiMapping.spatialMeta) {
+      spatialExplanation = this.buildSpatialExplanation(apiMapping.spatialMeta);
+      console.log('[ChatService DEBUG] Spatial explanation:', spatialExplanation);
+    }
 
     return {
       success: true,
       rawIntent,
       intent: validationResult.intent,
-      apiMapping
+      apiMapping,
+      spatialExplanation
     };
   }
 }

@@ -102,6 +102,13 @@ function App() {
       console.log('✅ Intent parsed:', intent);
       console.log('🗺️ API mapping:', mapping);
 
+      // Attach spatialMeta to intent for frontend visualization
+      // This enables circle rendering for landmark queries
+      if (mapping?.spatialMeta) {
+        intent.spatialMeta = mapping.spatialMeta;
+        console.log('🎯 Attached spatialMeta:', mapping.spatialMeta);
+      }
+
       setCurrentIntent(intent);
       setApiMapping(mapping);
       setThinkingStage('fetching');
@@ -228,6 +235,20 @@ function App() {
       timeEnd,
       limit: intent.limit || 100000
     };
+
+    // 🎯 Add centroid + radiusKm for circular (Haversine) filtering
+    // This enables the backend to filter by true distance, not just bbox
+    if (intent.spatialMeta?.centroid && intent.spatialMeta?.adaptiveRadiusKm) {
+      // Flatten centroid for URL query string (can't pass nested objects)
+      params.centroidLat = intent.spatialMeta.centroid.lat;
+      params.centroidLon = intent.spatialMeta.centroid.lon;
+      params.radiusKm = intent.spatialMeta.adaptiveRadiusKm;
+      console.log('🎯 Including circular filter params:', {
+        centroidLat: params.centroidLat,
+        centroidLon: params.centroidLon,
+        radiusKm: params.radiusKm
+      });
+    }
 
     console.log('📡 Fetching ARGO data with params:', JSON.stringify(params, null, 2));
 

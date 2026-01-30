@@ -1,16 +1,18 @@
 /**
  * Geospatial Resolver
  * 
- * Deterministic location → bbox resolution using local datasets
- * No APIs, no ML, no hardcoded coordinates
+ * Deterministic location → bbox resolution using local datasets + geocoding fallback
  * 
- * Datasets (loaded at startup):
- * - oceans-seas.geo.json (primary: named seas/gulfs)
- * - ne_10m_ocean.shp (fallback: global oceans) [TODO]
+ * Priority Order:
+ * 1. Local GeoJSON (oceans-seas.geo.json) - for seas, gulfs, oceans
+ * 2. Geocoding Service (Nominatim) - for cities, ports, landmarks
+ * 
+ * No hardcoded coordinates - everything is resolved dynamically
  */
 
 const fs = require('fs');
 const path = require('path');
+const geocodingService = require('./geocodingService');
 
 class SpatialResolver {
     constructor() {
@@ -30,6 +32,9 @@ class SpatialResolver {
             this.seasData = JSON.parse(rawData);
             this.loaded = true;
             console.log(`[SpatialResolver] Loaded ${this.seasData.features.length} named seas/gulfs`);
+
+            // Also initialize geocoding service
+            await geocodingService.init();
         } catch (error) {
             console.error('[SpatialResolver] Failed to load geospatial data:', error.message);
             throw error;
@@ -97,7 +102,7 @@ class SpatialResolver {
     }
 
     /**
-     * Resolve location string to bounding box
+     * Resolve location string to bounding box (synchronous, GeoJSON only)
      * @param {string} locationString - Natural language location (e.g., "Arabian Sea")
      * @returns {Object|null} { latMin, latMax, lonMin, lonMax } or null if not found
      */
@@ -121,19 +126,105 @@ class SpatialResolver {
             return bbox;
         }
 
-        console.warn(`[SpatialResolver] Location "${locationString}" not found in datasets`);
+        console.warn(`[SpatialResolver] Location "${locationString}" not found in local datasets`);
         return null;
     }
 
     /**
-     * Get all available location names (for debugging)
+     * Resolve location string to bounding box (async, with geocoding fallback)
+     * 
+     * This is the preferred method for landmark queries.
+     * Tries local GeoJSON first, then falls back to Nominatim geocoding.
+     * 
+     * @param {string} locationString - Location name (e.g., "Mumbai", "Arabian Sea")
+     * @returns {Object|null} { latMin, latMax, lonMin, lonMax, centroid, source, displayName }
+     */
+    async resolveWithGeocode(locationString) {
+        if (!this.loaded) {
+            await this.init();
+        }
+
+        // Step 1: Try local GeoJSON (seas, oceans, gulfs)
+        const localResult = this.resolve(locationString);
+        if (localResult) {
+            // Calculate centroid for adaptive radius
+            const centroid = {
+                lat: (localResult.latMin + localResult.latMax) / 2,
+                lon: (localResult.lonMin + localResult.lonMax) / 2
+            };
+            return {
+                ...localResult,
+                centroid,
+                source: 'geojson',
+                displayName: locationString,
+                isOceanRegion: true
+            };
+        }
+
+        // Step 2: Try geocoding service (cities, ports, landmarks)
+        console.log(`[SpatialResolver] Trying geocoding for "${locationString}"...`);
+        const geocodeResult = await geocodingService.resolveLandmark(locationString);
+
+        if (geocodeResult) {
+            // Use the geocoded bbox if available, otherwise create one from centroid
+            let bbox;
+            if (geocodeResult.bbox) {
+                bbox = geocodeResult.bbox;
+            } else {
+                // Create a small bbox around the point (for dynamic radius to expand)
+                const delta = 0.5; // ~55km at equator
+                bbox = {
+                    latMin: geocodeResult.lat - delta,
+                    latMax: geocodeResult.lat + delta,
+                    lonMin: geocodeResult.lon - delta,
+                    lonMax: geocodeResult.lon + delta
+                };
+            }
+
+            return {
+                ...bbox,
+                centroid: {
+                    lat: geocodeResult.lat,
+                    lon: geocodeResult.lon
+                },
+                source: 'nominatim',
+                displayName: geocodeResult.displayName,
+                type: geocodeResult.type,
+                isOceanRegion: false
+            };
+        }
+
+        // Both failed
+        console.warn(`[SpatialResolver] Could not resolve "${locationString}" via any method`);
+        return null;
+    }
+
+    /**
+     * Check if a query might be ambiguous
+     * @param {string} locationString - The query
+     * @returns {Object} { ambiguous: boolean, reason: string }
+     */
+    checkAmbiguity(locationString) {
+        return geocodingService.checkAmbiguity(locationString);
+    }
+
+    /**
+     * Get all available location names from local GeoJSON (for debugging)
      */
     getAvailableLocations() {
         if (!this.loaded) return [];
         return this.seasData.features.map(f => f.properties.NAME).sort();
+    }
+
+    /**
+     * Get cached geocoded landmarks (for debugging)
+     */
+    getCachedLandmarks() {
+        return geocodingService.getCachedLandmarks();
     }
 }
 
 // Export singleton instance
 const resolver = new SpatialResolver();
 module.exports = resolver;
+

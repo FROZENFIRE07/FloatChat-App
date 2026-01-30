@@ -1,0 +1,32 @@
+{
+  "mumbai": {
+    "lat": 19.054999,
+    "lon": 72.8692035,
+    "bbox": {
+      "latMin": 18.894999,
+      "latMax": 19.214999,
+      "lonMin": 72.7092035,
+      "lonMax": 73.0292035
+    },
+    "displayName": "Mumbai, Mumbai Suburban, Maharashtra, 400051, India",
+    "type": "city",
+    "class": "place",
+    "source": "nominatim",
+    "resolvedAt": "2026-01-27T17:44:07.063Z"
+  },
+  "chennai": {
+    "lat": 13.043567549999999,
+    "lon": 80.23654285,
+    "bbox": {
+      "latMin": 12.8519771,
+      "latMax": 13.235158,
+      "lonMin": 80.1401875,
+      "lonMax": 80.3328982
+    },
+    "displayName": "Chennai Corporation, Chennai, Tamil Nadu, India",
+    "type": "administrative",
+    "class": "boundary",
+    "source": "nominatim",
+    "resolvedAt": "2026-01-27T17:44:08.084Z"
+  }
+}
