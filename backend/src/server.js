@@ -84,8 +84,14 @@ async function startServer() {
     console.log('📍 Initializing spatial resolver...');
     await spatialResolver.init();
 
-    // Connect to ARGO database (SQLite)
-    argoDb.connect();
+    // Connect to ARGO database (SQLite or PostgreSQL)
+    // Note: PostgreSQL connection is async, SQLite is sync
+    try {
+      await argoDb.connect();
+    } catch (dbError) {
+      console.error('⚠️ ARGO database connection failed, server will start but ARGO queries will fail');
+      console.error('   Error:', dbError.message);
+    }
 
     // Connect to MongoDB (for web data)
     await MongoConnection.connect();

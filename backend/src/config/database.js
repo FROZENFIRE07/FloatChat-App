@@ -122,7 +122,9 @@ class ArgoPostgresDatabase {
         ssl: { rejectUnauthorized: false },
         max: 10,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000
+        connectionTimeoutMillis: 30000,  // Increased timeout for pooler
+        // Required for Supabase connection pooler (pgbouncer)
+        application_name: 'floatchat-backend'
       });
 
       // Test connection
