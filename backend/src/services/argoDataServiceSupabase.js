@@ -18,6 +18,7 @@ const { argoDb, USE_SUPABASE } = require('../config/database');
 class ArgoDataServiceSupabase {
     /**
      * Query 1: Get data by region and time
+     * Implements pagination to overcome Supabase's 1000 row limit
      */
     static async getRegionData(params) {
         const {
@@ -31,27 +32,45 @@ class ArgoDataServiceSupabase {
         const db = argoDb.getDatabase();
         const supabase = db.getClient();
 
-        let query = supabase
-            .from('argo_profiles')
-            .select('float_id, timestamp, latitude, longitude, depth, temperature, salinity, pressure')
-            .gte('latitude', latMin)
-            .lte('latitude', latMax)
-            .gte('longitude', lonMin)
-            .lte('longitude', lonMax)
-            .gte('timestamp', timeStart)
-            .lte('timestamp', timeEnd)
-            .order('timestamp', { ascending: false })
-            .order('depth', { ascending: true })
-            .limit(limit);
+        // Supabase has a 1000 row limit per request, so we need pagination
+        const BATCH_SIZE = 1000;
+        const maxRows = Math.min(limit, 50000); // Cap at 50k for performance
+        let allResults = [];
+        let offset = 0;
+        let hasMore = true;
 
-        const { data: results, error } = await query;
+        console.log(`[ArgoDataServiceSupabase] Fetching up to ${maxRows} rows with pagination...`);
 
-        if (error) {
-            throw new Error(`Query failed: ${error.message}`);
+        while (hasMore && allResults.length < maxRows) {
+            const { data: results, error } = await supabase
+                .from('argo_profiles')
+                .select('float_id, timestamp, latitude, longitude, depth, temperature, salinity, pressure')
+                .gte('latitude', latMin)
+                .lte('latitude', latMax)
+                .gte('longitude', lonMin)
+                .lte('longitude', lonMax)
+                .gte('timestamp', timeStart)
+                .lte('timestamp', timeEnd)
+                .order('timestamp', { ascending: false })
+                .order('depth', { ascending: true })
+                .range(offset, offset + BATCH_SIZE - 1);
+
+            if (error) {
+                throw new Error(`Query failed: ${error.message}`);
+            }
+
+            if (!results || results.length === 0) {
+                hasMore = false;
+            } else {
+                allResults = allResults.concat(results);
+                offset += BATCH_SIZE;
+                hasMore = results.length === BATCH_SIZE;
+                console.log(`[ArgoDataServiceSupabase] Fetched batch: ${results.length} rows, total: ${allResults.length}`);
+            }
         }
 
         // Normalize longitude (0-360 → -180...+180)
-        let normalizedResults = (results || []).map(row => ({
+        let normalizedResults = allResults.map(row => ({
             ...row,
             longitude: row.longitude > 180 ? row.longitude - 360 : row.longitude
         }));
@@ -82,6 +101,8 @@ class ArgoDataServiceSupabase {
 
         // Calculate metadata
         const metadata = this._calculateMetadata(normalizedResults);
+
+        console.log(`[ArgoDataServiceSupabase] ✅ Final result: ${normalizedResults.length} profiles from ${metadata.uniqueFloats || 0} floats`);
 
         return {
             success: true,
