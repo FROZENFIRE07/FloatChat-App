@@ -100,7 +100,7 @@ exports.getNearestFloats = async (req, res, next) => {
 exports.getFloatMetadata = async (req, res, next) => {
   try {
     const floatId = parseInt(req.params.floatId);
-    const result = ArgoDataService.getFloatMetadata(floatId);
+    const result = await ArgoDataService.getFloatMetadata(floatId);
     res.json(result);
   } catch (error) {
     next(error);
@@ -114,7 +114,7 @@ exports.getFloatMetadata = async (req, res, next) => {
  */
 exports.getDatabaseStats = async (req, res, next) => {
   try {
-    const result = ArgoDataService.getDatabaseStats();
+    const result = await ArgoDataService.getDatabaseStats();
     res.json(result);
   } catch (error) {
     next(error);
@@ -139,7 +139,7 @@ exports.checkDataAvailability = async (req, res, next) => {
       timeEnd: req.query.timeEnd
     };
 
-    const result = ArgoDataService.checkDataAvailability(params);
+    const result = await ArgoDataService.checkDataAvailability(params);
     res.json(result);
   } catch (error) {
     next(error);
@@ -168,7 +168,7 @@ exports.getActiveFloats = async (req, res, next) => {
       params.lonMax = parseFloat(req.query.lonMax);
     }
 
-    const result = ArgoDataService.getActiveFloats(params);
+    const result = await ArgoDataService.getActiveFloats(params);
     res.json(result);
   } catch (error) {
     next(error);
@@ -194,7 +194,7 @@ exports.getRegionalStatistics = async (req, res, next) => {
       variable: req.query.variable || 'temperature'
     };
 
-    const result = ArgoDataService.getRegionalStatistics(params);
+    const result = await ArgoDataService.getRegionalStatistics(params);
     res.json(result);
   } catch (error) {
     next(error);

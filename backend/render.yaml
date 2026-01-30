@@ -20,6 +20,12 @@ services:
       - key: API_PREFIX
         value: /api/v1
       # The following must be set manually in Render dashboard (secrets)
+      # Supabase REST API credentials (required for production)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      # Legacy PostgreSQL connection (no longer used, kept for reference)
       - key: SUPABASE_DATABASE_URL
         sync: false
       - key: MONGODB_URI

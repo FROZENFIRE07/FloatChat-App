@@ -862,4 +862,14 @@ class ArgoDataService {
   }
 }
 
-module.exports = ArgoDataService;
+// Export the appropriate service based on database mode
+const { USE_SUPABASE } = require('../config/database');
+
+if (USE_SUPABASE) {
+  // Use async Supabase REST API version for production
+  const ArgoDataServiceSupabase = require('./argoDataServiceSupabase');
+  module.exports = ArgoDataServiceSupabase;
+} else {
+  // Use synchronous SQLite version for local development
+  module.exports = ArgoDataService;
+}

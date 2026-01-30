@@ -17,6 +17,7 @@
 const Database = require('better-sqlite3');
 const mongoose = require('mongoose');
 const path = require('path');
+const SupabaseArgoDatabase = require('./supabaseClient');
 
 // Check which database mode to use
 const USE_SUPABASE = process.env.USE_SUPABASE === 'true';
@@ -253,9 +254,10 @@ class MongoConnection {
 }
 
 // Export singleton instance based on environment
-const argoDb = USE_SUPABASE ? new ArgoPostgresDatabase() : new ArgoSQLiteDatabase();
+// Use Supabase REST API client for production (works across all cloud providers)
+const argoDb = USE_SUPABASE ? new SupabaseArgoDatabase() : new ArgoSQLiteDatabase();
 
-console.log(`🔧 ARGO Database Mode: ${USE_SUPABASE ? 'PostgreSQL (Supabase)' : 'SQLite (Local)'}`);
+console.log(`🔧 ARGO Database Mode: ${USE_SUPABASE ? 'Supabase REST API' : 'SQLite (Local)'}`);
 
 module.exports = {
   argoDb,
