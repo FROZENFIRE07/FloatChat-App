@@ -84,19 +84,7 @@ async function startServer() {
     console.log('📍 Initializing spatial resolver...');
     await spatialResolver.init();
 
-    // Connect to ARGO database (SQLite or PostgreSQL)
-    // Note: PostgreSQL connection is async, SQLite is sync
-    try {
-      await argoDb.connect();
-    } catch (dbError) {
-      console.error('⚠️ ARGO database connection failed, server will start but ARGO queries will fail');
-      console.error('   Error:', dbError.message);
-    }
-
-    // Connect to MongoDB (for web data)
-    await MongoConnection.connect();
-
-    // Start server
+    // START SERVER FIRST - Render needs to see the port immediately
     app.listen(PORT, () => {
       console.log('='.repeat(60));
       console.log(`✅ Server running on port ${PORT}`);
@@ -105,6 +93,23 @@ async function startServer() {
       console.log(`💚 Health Check: http://localhost:${PORT}${API_PREFIX}/health`);
       console.log('='.repeat(60));
     });
+
+    // Connect to databases AFTER server is listening (non-blocking)
+    // MongoDB connection
+    try {
+      await MongoConnection.connect();
+    } catch (mongoError) {
+      console.error('⚠️ MongoDB connection failed:', mongoError.message);
+    }
+
+    // ARGO database connection (can be slow, do it last)
+    try {
+      await argoDb.connect();
+    } catch (dbError) {
+      console.error('⚠️ ARGO database connection failed, ARGO queries will fail');
+      console.error('   Error:', dbError.message);
+    }
+
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
