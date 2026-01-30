@@ -62,6 +62,8 @@ app.get('/', (req, res) => {
 
 // API Routes
 const API_PREFIX = process.env.API_PREFIX || '/api/v1';
+console.log(`📌 API_PREFIX value: "${API_PREFIX}"`);
+console.log(`📌 Raw env API_PREFIX: "${process.env.API_PREFIX}"`);
 app.use(`${API_PREFIX}/health`, healthRoutes);
 app.use(`${API_PREFIX}/argo`, argoRoutes);
 app.use(`${API_PREFIX}/chat`, chatRoutes);
