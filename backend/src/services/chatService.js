@@ -741,6 +741,36 @@ class ChatService {
       };
     }
 
+    // 🚑 HEURISTIC FIX: Extract float_id from question if AI failed
+    // AI often fails with complex IDs like "nodc_D1900975_339" (splits them)
+    // or standard 7-digit IDs (treats as integer)
+    if (rawIntent && question) {
+      // Check for complex "nodc_..." IDs
+      const complexIdMatch = question.match(/(nodc_[A-Za-z0-9_]+)/i);
+      if (complexIdMatch) {
+        console.log(`[ChatService] 🚑 Rescued complex float_id: ${complexIdMatch[1]}`);
+        rawIntent.float_id = complexIdMatch[1];
+        // Ensure intent type is correct if we found a float ID
+        if (rawIntent.intent_type !== 'VERTICAL_PROFILE_QUERY') {
+          rawIntent.intent_type = 'VERTICAL_PROFILE_QUERY';
+        }
+      }
+      // Check for standard 7-digit WMO IDs
+      else {
+        const sevenDigitMatch = question.match(/\b(\d{7})\b/);
+        // Only override if current float_id is missing or suspicious (e.g. short int like 339)
+        if (sevenDigitMatch &&
+          (!rawIntent.float_id || String(rawIntent.float_id).length < 7)) {
+          console.log(`[ChatService] 🚑 Rescued 7-digit float_id: ${sevenDigitMatch[1]}`);
+          rawIntent.float_id = sevenDigitMatch[1];
+          // Ensure intent type is correct if we found a float ID and it's not a generic query
+          if (!rawIntent.intent_type || rawIntent.intent_type === 'UNKNOWN') {
+            rawIntent.intent_type = 'VERTICAL_PROFILE_QUERY';
+          }
+        }
+      }
+    }
+
     // Step 2: Validate and normalize
     const validationResult = this.validateAndNormalize(rawIntent);
     console.log('[ChatService DEBUG] Validation result:', JSON.stringify(validationResult, null, 2));
