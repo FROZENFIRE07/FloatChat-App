@@ -49,7 +49,7 @@ router.get(
 router.get(
   '/profile/:floatId',
   [
-    param('floatId').isInt().withMessage('Invalid floatId'),
+    param('floatId').isString().withMessage('Invalid floatId'),
     query('timestamp').optional().isISO8601().withMessage('Invalid timestamp format'),
     validate
   ],
@@ -83,7 +83,7 @@ router.get(
 router.get(
   '/float/:floatId',
   [
-    param('floatId').isInt().withMessage('Invalid floatId'),
+    param('floatId').isString().withMessage('Invalid floatId'),
     validate
   ],
   argoController.getFloatMetadata

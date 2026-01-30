@@ -57,7 +57,7 @@ exports.getRegionData = async (req, res, next) => {
 exports.getVerticalProfile = async (req, res, next) => {
   try {
     const params = {
-      floatId: parseInt(req.params.floatId),
+      floatId: req.params.floatId,
       timestamp: req.query.timestamp
     };
 
@@ -99,7 +99,7 @@ exports.getNearestFloats = async (req, res, next) => {
  */
 exports.getFloatMetadata = async (req, res, next) => {
   try {
-    const floatId = parseInt(req.params.floatId);
+    const floatId = req.params.floatId;
     const result = await ArgoDataService.getFloatMetadata(floatId);
     res.json(result);
   } catch (error) {
