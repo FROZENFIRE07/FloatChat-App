@@ -34,7 +34,7 @@ class ArgoDataServiceSupabase {
 
         // Supabase has a 1000 row limit per request, so we need pagination
         const BATCH_SIZE = 1000;
-        const maxRows = Math.min(limit, 50000); // Cap at 50k for performance
+        const maxRows = Math.min(limit, 10000); // Cap at 10k for reasonable load times
         let allResults = [];
         let offset = 0;
         let hasMore = true;
