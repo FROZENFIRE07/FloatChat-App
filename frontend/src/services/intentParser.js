@@ -20,11 +20,11 @@ class IntentParserService {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
-      
+
       if (!response.ok) {
         throw new Error(`Health check failed: ${response.status}`);
       }
-      
+
       const data = await response.json();
       return data.status === 'healthy' && data.responsive;
     } catch (error) {
@@ -166,4 +166,5 @@ class IntentParserService {
   }
 }
 
-export default new IntentParserService();
+const intentParserService = new IntentParserService();
+export default intentParserService;

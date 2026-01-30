@@ -202,7 +202,7 @@ function MorphingCursor({ isTransitioning = false }) {
             clearTimeout(state.timeoutID);
             cancelAnimationFrame(state.animationId);
         };
-    }, []);
+    }, [isTransitioning]);
 
     return (
         <div ref={containerRef} className="gooey-cursor-container">

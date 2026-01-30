@@ -14,7 +14,7 @@ import './TimeSlider.css';
  * - Time changes map state directly
  */
 
-export default function TimeSlider({ 
+export default function TimeSlider({
   floats = [],
   minTime,
   maxTime,
@@ -64,7 +64,7 @@ export default function TimeSlider({
   // State for slider values (range)
   const [startValue, setStartValue] = useState(timeBounds.min);
   const [endValue, setEndValue] = useState(timeBounds.max);
-  const [isDragging, setIsDragging] = useState(false);
+  const [_isDragging, setIsDragging] = useState(false);
 
   // Update when time bounds change
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function TimeSlider({
   // Notify parent on change (debounced for smooth animation)
   const timeoutRef = useRef(null);
   const hasInitialized = useRef(false);
-  
+
   useEffect(() => {
     // Skip the first initialization to prevent immediate filtering
     if (!hasInitialized.current) {
@@ -106,10 +106,10 @@ export default function TimeSlider({
   // Format date for display
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
   };
 
@@ -147,7 +147,7 @@ export default function TimeSlider({
       <div className="time-slider-track-container">
         <div className="time-slider-track">
           {/* Selected range highlight */}
-          <div 
+          <div
             className="time-slider-range"
             style={{
               left: `${startPercent}%`,

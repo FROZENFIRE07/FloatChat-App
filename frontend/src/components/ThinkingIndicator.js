@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './ThinkingIndicator.css';
 
 /**
@@ -28,12 +28,12 @@ export default function ThinkingIndicator({ stage = 'understanding', onCancel })
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Map stages to message indices for backend-driven progression
-  const stageToIndex = {
+  const stageToIndex = useMemo(() => ({
     understanding: 0,
     validating: 2,
     fetching: 4,
     preparing: 5
-  };
+  }), []);
 
   // Rotate through messages with variable timing (600-1200ms)
   useEffect(() => {

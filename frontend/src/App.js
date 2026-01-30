@@ -36,18 +36,18 @@ function App() {
 
   // Query State
   const [currentQuery, setCurrentQuery] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [_isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isInvalidQuery, setIsInvalidQuery] = useState(false);
 
   // Intent & Data State
   const [currentIntent, setCurrentIntent] = useState(null);
   const [currentData, setCurrentData] = useState(null);
-  const [apiMapping, setApiMapping] = useState(null);
+  const [_apiMapping, setApiMapping] = useState(null);
 
   // System Health
-  const [argoHealth, setArgoHealth] = useState(null);
-  const [aiHealth, setAiHealth] = useState(false);
+  const [_argoHealth, setArgoHealth] = useState(null);
+  const [_aiHealth, setAiHealth] = useState(false);
 
   // Initialize: Check system health
   useEffect(() => {
