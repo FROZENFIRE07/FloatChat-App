@@ -62,7 +62,7 @@ export default function ThinkingIndicator({ stage = 'understanding', onCancel })
     }, getNextDelay());
 
     return () => clearTimeout(timer);
-  }, [messageIndex, stage]);
+  }, [messageIndex, stage, stageToIndex]);
 
   // Reset to backend stage when it changes
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function ThinkingIndicator({ stage = 'understanding', onCancel })
     if (messageIndex < targetIndex) {
       setMessageIndex(targetIndex);
     }
-  }, [stage, messageIndex]);
+  }, [stage, messageIndex, stageToIndex]);
 
   return (
     <div className="thinking-indicator-v2">

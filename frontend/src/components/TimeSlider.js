@@ -64,7 +64,7 @@ export default function TimeSlider({
   // State for slider values (range)
   const [startValue, setStartValue] = useState(timeBounds.min);
   const [endValue, setEndValue] = useState(timeBounds.max);
-  const [_isDragging, setIsDragging] = useState(false);
+  const [, setIsDragging] = useState(false);
 
   // Update when time bounds change
   useEffect(() => {
