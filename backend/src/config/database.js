@@ -109,6 +109,7 @@ class ArgoPostgresDatabase {
     try {
       // Dynamically import pg only when needed
       const { Pool } = require('pg');
+      const dns = require('dns');
 
       const connectionString = process.env.SUPABASE_DATABASE_URL;
       if (!connectionString) {
@@ -117,32 +118,58 @@ class ArgoPostgresDatabase {
 
       console.log('📊 Connecting to ARGO PostgreSQL database (Supabase)...');
 
+      // Force IPv4 lookup order to avoid IPv6 issues on some cloud providers
+      dns.setDefaultResultOrder('ipv4first');
+
+      // Parse the connection URL to extract components
+      const url = new URL(connectionString);
+      console.log(`   Host: ${url.hostname}, Port: ${url.port}`);
+
       this.pool = new Pool({
         connectionString,
         ssl: { rejectUnauthorized: false },
-        max: 10,
+        max: 5,  // Reduced for connection pooler
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 30000,  // Increased timeout for pooler
-        // Required for Supabase connection pooler (pgbouncer)
-        application_name: 'floatchat-backend'
+        connectionTimeoutMillis: 60000,  // Increased for cloud environment
+        // Required for Supabase connection pooler (Supavisor/pgbouncer)
+        application_name: 'floatchat-backend',
+        // Connection pooler specific settings
+        statement_timeout: 30000,
+        query_timeout: 30000
       });
 
-      // Test connection
-      const client = await this.pool.connect();
-      const result = await client.query(`
-        SELECT table_name FROM information_schema.tables 
-        WHERE table_name IN ('argo_profiles', 'argo_floats')
-      `);
-      client.release();
+      // Test connection with retry
+      let retries = 3;
+      let lastError = null;
 
-      if (result.rows.length !== 2) {
-        throw new Error('Required tables not found in Supabase database.');
+      while (retries > 0) {
+        try {
+          console.log(`   Attempting connection (${4 - retries}/3)...`);
+          const client = await this.pool.connect();
+          const result = await client.query(`
+            SELECT table_name FROM information_schema.tables 
+            WHERE table_name IN ('argo_profiles', 'argo_floats')
+          `);
+          client.release();
+
+          if (result.rows.length !== 2) {
+            throw new Error('Required tables not found in Supabase database.');
+          }
+
+          console.log('✅ ARGO PostgreSQL database connected successfully');
+          console.log(`   Tables: ${result.rows.map(r => r.table_name).join(', ')}`);
+          return this.pool;
+        } catch (err) {
+          lastError = err;
+          retries--;
+          if (retries > 0) {
+            console.log(`   Connection attempt failed, retrying in 5s...`);
+            await new Promise(r => setTimeout(r, 5000));
+          }
+        }
       }
 
-      console.log('✅ ARGO PostgreSQL database connected successfully');
-      console.log(`   Tables: ${result.rows.map(r => r.table_name).join(', ')}`);
-
-      return this.pool;
+      throw lastError;
     } catch (error) {
       console.error('❌ Failed to connect to ARGO PostgreSQL database:', error.message);
       throw error;
