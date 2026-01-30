@@ -16,24 +16,39 @@ const router = express.Router();
  * @desc    Overall system health check
  * @access  Public
  */
-router.get('/', (req, res) => {
-  const argoHealth = argoDb.healthCheck();
-  const mongoHealth = MongoConnection.healthCheck();
+router.get('/', async (req, res) => {
+  try {
+    // Handle both sync and async healthCheck
+    const argoHealth = typeof argoDb.healthCheck === 'function'
+      ? (argoDb.healthCheck.constructor.name === 'AsyncFunction'
+        ? await argoDb.healthCheck()
+        : argoDb.healthCheck())
+      : { status: 'unknown', error: 'healthCheck not available' };
 
-  const overallStatus = 
-    argoHealth.status === 'healthy' && mongoHealth.status === 'healthy'
-      ? 'healthy'
-      : 'degraded';
+    const mongoHealth = MongoConnection.healthCheck();
 
-  res.status(overallStatus === 'healthy' ? 200 : 503).json({
-    success: true,
-    status: overallStatus,
-    timestamp: new Date().toISOString(),
-    services: {
-      argoDatabase: argoHealth,
-      mongoDatabase: mongoHealth
-    }
-  });
+    const overallStatus =
+      argoHealth.status === 'healthy' && mongoHealth.status === 'healthy'
+        ? 'healthy'
+        : 'degraded';
+
+    res.status(overallStatus === 'healthy' ? 200 : 503).json({
+      success: true,
+      status: overallStatus,
+      timestamp: new Date().toISOString(),
+      services: {
+        argoDatabase: argoHealth,
+        mongoDatabase: mongoHealth
+      }
+    });
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 /**
@@ -41,14 +56,27 @@ router.get('/', (req, res) => {
  * @desc    ARGO database health check
  * @access  Public
  */
-router.get('/argo', (req, res) => {
-  const health = argoDb.healthCheck();
-  
-  res.status(health.status === 'healthy' ? 200 : 503).json({
-    success: true,
-    ...health,
-    timestamp: new Date().toISOString()
-  });
+router.get('/argo', async (req, res) => {
+  try {
+    const health = typeof argoDb.healthCheck === 'function'
+      ? (argoDb.healthCheck.constructor.name === 'AsyncFunction'
+        ? await argoDb.healthCheck()
+        : argoDb.healthCheck())
+      : { status: 'unknown' };
+
+    res.status(health.status === 'healthy' ? 200 : 503).json({
+      success: true,
+      ...health,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 /**
@@ -58,7 +86,7 @@ router.get('/argo', (req, res) => {
  */
 router.get('/mongo', (req, res) => {
   const health = MongoConnection.healthCheck();
-  
+
   res.status(health.status === 'healthy' ? 200 : 503).json({
     success: true,
     ...health,
