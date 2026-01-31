@@ -5,7 +5,6 @@ import intentParser from './services/intentParser';
 
 // Design System Components
 import LandingPage from './components/LandingPage';
-import AcknowledgementState from './components/AcknowledgementState';
 import ThinkingIndicator from './components/ThinkingIndicator';
 import WorkspaceLayout from './components/WorkspaceLayout';
 import BubbleBackground from './components/BubbleBackground';
@@ -22,9 +21,8 @@ import MorphingCursor from './components/MorphingCursor';
  * 
  * Flow:
  * 1. Landing page → Invite curiosity
- * 2. Acknowledgement → Immediate feedback when Enter pressed
- * 3. Loading → AI processing with stateful messages
- * 4. Workspace → Data visualization with follow-up exploration
+ * 2. Loading → AI processing with stateful messages
+ * 3. Workspace → Data visualization with follow-up exploration
  */
 
 function App() {
@@ -65,21 +63,17 @@ function App() {
     }
   };
 
-  // Handle first query submission
+  // Handle first query submission - go directly to loading
   const handleFirstQuery = async (query) => {
-    // 1. Immediate acknowledgement
+    // 1. Go directly to loading state
     setCurrentQuery(query);
     setErrorMessage(null);
     setIsInvalidQuery(false);
-    setUiMode('acknowledgement');
-    setIsTransitioning(true);
-  };
-
-  // Transition from acknowledgement to loading
-  const handleAcknowledgementComplete = () => {
     setUiMode('loading');
     setIsTransitioning(false);
-    processQuery(currentQuery);
+
+    // 2. Start processing immediately
+    processQuery(query);
   };
 
   // Core query processing
@@ -345,21 +339,7 @@ function App() {
     );
   }
 
-  // State 2: Acknowledgement
-  if (uiMode === 'acknowledgement') {
-    return (
-      <div className="app app-acknowledgement-mode">
-        <BubbleBackground isSlowed={true} />
-        <MorphingCursor isTransitioning={true} />
-        <AcknowledgementState
-          query={currentQuery}
-          onTransitionComplete={handleAcknowledgementComplete}
-        />
-      </div>
-    );
-  }
-
-  // State 3: Loading with stateful messages
+  // State 2: Loading with stateful messages
   if (uiMode === 'loading') {
     return (
       <div className="app app-loading-mode">

@@ -94,24 +94,46 @@ function LandingPage({ onStartQuery, onStartDemo, isTransitioning, errorMessage 
           </div>
         </form>
 
+        {/* FAQs Section */}
+        <div className="faqs-section">
+          <h3 className="faqs-title">Try asking:</h3>
+          <div className="faq-items">
+            <button
+              className="faq-item"
+              onClick={() => onStartQuery("Show me temperature for Arabian Sea in Jan 2019")}
+              type="button"
+            >
+              <svg className="faq-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 8h12M8 2v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span>Show me temperature for Arabian Sea in Jan 2019</span>
+            </button>
+            <button
+              className="faq-item"
+              onClick={() => onStartQuery("Show me salinity near Chennai in Jan 2019")}
+              type="button"
+            >
+              <svg className="faq-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 8h12M8 2v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span>Show me salinity near Chennai in Jan 2019</span>
+            </button>
+            <button
+              className="faq-item"
+              onClick={() => onStartQuery("Show me salinity in Bay of Bengal in Jan 2019")}
+              type="button"
+            >
+              <svg className="faq-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 8h12M8 2v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span>Show me salinity in Bay of Bengal in Jan 2019</span>
+            </button>
+          </div>
+        </div>
+
         <p className="hero-helper-text" id="hero-helper-text">
           No coordinates. No filters. Just ask.
         </p>
-
-        {/* Demo Mode Button */}
-        <div className="demo-mode-container">
-          <button
-            className="btn-demo-mode"
-            onClick={onStartDemo}
-            type="button"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 2 l8 8 l-8 8 l-8 -8 z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinejoin="round" />
-            </svg>
-            <span>View Demo: Arabian Sea Temperature</span>
-          </button>
-          <span className="demo-label">AI Intent Parser Not Required</span>
-        </div>
 
         <div className="hero-scroll-indicator" aria-hidden="true">
           <svg

@@ -35,13 +35,8 @@ export default function ThinkingIndicator({ stage = 'understanding', onCancel })
     preparing: 5
   }), []);
 
-  // Rotate through messages with variable timing (600-1200ms)
+  // Rotate through messages every 3 seconds
   useEffect(() => {
-    const getNextDelay = () => {
-      // Variable timing based on message importance
-      return 600 + Math.random() * 600;
-    };
-
     const timer = setTimeout(() => {
       setIsTransitioning(true);
 
@@ -59,7 +54,7 @@ export default function ThinkingIndicator({ stage = 'understanding', onCancel })
         });
         setIsTransitioning(false);
       }, 150);
-    }, getNextDelay());
+    }, 3000); // Fixed 3-second interval
 
     return () => clearTimeout(timer);
   }, [messageIndex, stage, stageToIndex]);
