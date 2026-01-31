@@ -34,7 +34,7 @@ function LandingPage({ onStartQuery, onStartDemo, isTransitioning, errorMessage 
     <div className={`landing-page ${isTransitioning ? 'transitioning' : ''}`}>
       <MorphingCursor isTransitioning={isTransitioning} />
       <BubbleBackground isSlowed={isTransitioning} />
-      <div className={`hero-section ${isTransitioning ? 'fade-out' : ''}`}>
+      <div className={`landing-hero-section ${isTransitioning ? 'fade-out' : ''}`}>
         <div className="hero-logo">
           FloatChat
         </div>

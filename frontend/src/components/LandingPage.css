@@ -43,7 +43,8 @@
   animation: float-slow 20s infinite ease-in-out reverse;
 }
 
-.hero-section {
+/* Renamed from .hero-section to avoid collision with WorkspaceLayout */
+.landing-hero-section {
   position: relative;
   z-index: 10;
   max-width: 900px;
@@ -340,7 +341,7 @@
 }
 
 /* Transition Animations */
-.hero-section.fade-out {
+.landing-hero-section.fade-out {
   animation: fade-out-up 0.4s ease-out forwards;
 }
 
