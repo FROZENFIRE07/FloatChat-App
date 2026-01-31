@@ -7,8 +7,7 @@ import intentParser from './services/intentParser';
 import LandingPage from './components/LandingPage';
 import ThinkingIndicator from './components/ThinkingIndicator';
 import WorkspaceLayout from './components/WorkspaceLayout';
-import BubbleBackground from './components/BubbleBackground';
-import MorphingCursor from './components/MorphingCursor';
+
 
 /**
  * FloatChat - Scientific Exploration Interface
