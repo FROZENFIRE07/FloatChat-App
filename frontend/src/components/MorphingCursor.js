@@ -221,7 +221,7 @@ function MorphingCursor({ isTransitioning = false }) {
             clearTimeout(state.timeoutID);
             cancelAnimationFrame(state.animationId);
         };
-    }, [isTransitioning]);
+    }, [isTransitioning, isMobile]);
 
     return isMobile ? null : (
         <div ref={containerRef} className="gooey-cursor-container">

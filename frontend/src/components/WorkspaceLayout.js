@@ -101,7 +101,15 @@ export default function WorkspaceLayout({
         }
 
         return null;
-    }, [intent?.spatialMeta, intent?.region_semantic, intent?.region, intent?.latitude_min]);
+    }, [
+        intent?.spatialMeta,
+        intent?.region_semantic,
+        intent?.region,
+        intent?.latitude_min,
+        intent?.latitude_max,
+        intent?.longitude_min,
+        intent?.longitude_max
+    ]);
 
     const variable = intent?.variable || (intent?.variables && intent.variables[0]) || 'temperature';
 
