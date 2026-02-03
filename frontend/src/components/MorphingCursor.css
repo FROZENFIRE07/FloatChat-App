@@ -13,6 +13,14 @@
     overflow: hidden;
 }
 
+/* 📱 Force hide on mobile/touch */
+/* 📱 Force hide on mobile/touch */
+@media (max-width: 768px) {
+    .gooey-cursor-container {
+        display: none !important;
+    }
+}
+
 #goo {
     display: none;
     /* Hide the SVG definition physically, used by filter ref */

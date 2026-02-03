@@ -52,10 +52,11 @@ export default function WorkspaceLayout({
             console.log('🎯 WorkspaceLayout: Using spatialMeta for region', meta);
             return {
                 // Include bbox coords for map bounds calculation
-                latMin: intent.region?.latMin || null,
-                latMax: intent.region?.latMax || null,
-                lonMin: intent.region?.lonMin || null,
-                lonMax: intent.region?.lonMax || null,
+                // Include bbox coords for map bounds calculation - checking all possible key formats
+                latMin: intent.region?.latMin ?? intent.region?.latitude_min ?? intent.latitude_min ?? null,
+                latMax: intent.region?.latMax ?? intent.region?.latitude_max ?? intent.latitude_max ?? null,
+                lonMin: intent.region?.lonMin ?? intent.region?.longitude_min ?? intent.longitude_min ?? null,
+                lonMax: intent.region?.lonMax ?? intent.region?.longitude_max ?? intent.longitude_max ?? null,
                 // Include spatialMeta for circle rendering
                 centroid: meta.centroid,
                 adaptiveRadiusKm: meta.adaptiveRadiusKm,
@@ -76,8 +77,31 @@ export default function WorkspaceLayout({
             return regionMap[intent.region_semantic];
         }
 
-        return intent?.region || null;
-    }, [intent?.spatialMeta, intent?.region_semantic, intent?.region]);
+        // Handle explicit region from intent (normalize keys to latMin/Max)
+        if (intent?.region) {
+            return {
+                ...intent.region,
+                latMin: intent.region.latMin ?? intent.region.latitude_min,
+                latMax: intent.region.latMax ?? intent.region.latitude_max,
+                lonMin: intent.region.lonMin ?? intent.region.longitude_min,
+                lonMax: intent.region.lonMax ?? intent.region.longitude_max,
+                displayName: intent.region.name || intent.region.display_name
+            };
+        }
+
+        // Handle top-level keys if region object is missing but coords exist
+        if (intent?.latitude_min !== undefined) {
+            return {
+                latMin: intent.latitude_min,
+                latMax: intent.latitude_max,
+                lonMin: intent.longitude_min,
+                lonMax: intent.longitude_max,
+                displayName: "Custom Region"
+            };
+        }
+
+        return null;
+    }, [intent?.spatialMeta, intent?.region_semantic, intent?.region, intent?.latitude_min]);
 
     const variable = intent?.variable || (intent?.variables && intent.variables[0]) || 'temperature';
 
@@ -192,6 +216,10 @@ export default function WorkspaceLayout({
                                     <SecondaryVisualization
                                         floats={data}
                                         variable={variable}
+                                        timeRange={{
+                                            min: new Date(intent?.start_date || intent?.start_time || '2019-01-01').getTime(),
+                                            max: new Date(intent?.end_date || intent?.end_time || '2019-02-01').getTime()
+                                        }}
                                     />
                                 </div>
                                 <AIInsightCard

@@ -64,8 +64,27 @@ function MorphingCursor({ isTransitioning = false }) {
         isTransitioning: false
     });
 
+    // 📱 Mobile Check: Disable custom cursor on touch devices or small screens
+    // 📱 Mobile Check: Disable custom cursor on small screens only
+    const [isMobile, setIsMobile] = React.useState(
+        typeof window !== 'undefined' && window.innerWidth < 768
+    );
+
     useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+
+
+    useEffect(() => {
+        if (isMobile) return;
         const container = containerRef.current;
+        if (!container) return;
+
         const state = stateRef.current;
 
         // Initialize dots
@@ -204,7 +223,7 @@ function MorphingCursor({ isTransitioning = false }) {
         };
     }, [isTransitioning]);
 
-    return (
+    return isMobile ? null : (
         <div ref={containerRef} className="gooey-cursor-container">
             {/* SVG for Filter Definition only */}
             <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="800" style={{ display: 'none' }}>

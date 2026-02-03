@@ -82,6 +82,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -107,18 +108,93 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .secondary-visualization {
+    background: #0F1E2E;
+    /* Dark ocean background */
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+
   .secondary-viz-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+    background: transparent;
+    /* Remove header background to blend */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .secondary-viz-title {
+    text-align: center;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    /* Lighter text */
   }
 
   .secondary-viz-controls {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .viz-toggle {
+    flex: 1;
+    padding: 12px 16px;
+    /* Larger touch target */
+    font-size: 14px;
+    text-align: center;
+    height: 48px;
+    /* Minimum touch target height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Inactive State (Dark Mode) */
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .viz-toggle.active {
+    color: #FFFFFF;
+    border: none;
+    background: #1976d2;
+    /* Default active fallback */
+  }
+
+  /* Specific active colors for mobile */
+  .viz-toggle.toggle-temporal.active {
+    background: #4DA3FF !important;
+    /* Muted Blue */
+  }
+
+  .viz-toggle.toggle-depth.active {
+    background: #2EC4B6 !important;
+    /* Muted Teal */
+  }
+
+  .viz-collapse {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    margin-left: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .viz-collapse:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
   }
 
   .secondary-viz-content {
-    padding: 16px;
+    padding: 12px 6px;
+    /* Reduce padding to give more width to chart */
+  }
+
+  .no-data-message {
+    color: rgba(255, 255, 255, 0.5);
   }
 }

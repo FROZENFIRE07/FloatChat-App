@@ -174,7 +174,7 @@ export default function RegionMapVisualization({
 
   // Calculate map bounds from region or floats
   const bounds = React.useMemo(() => {
-    if (region && region.latMin && region.latMax && region.lonMin && region.lonMax) {
+    if (region && region.latMin != null && region.latMax != null && region.lonMin != null && region.lonMax != null) {
       return [
         [region.latMin, region.lonMin],
         [region.latMax, region.lonMax]
@@ -195,7 +195,7 @@ export default function RegionMapVisualization({
 
   // Region boundary
   const regionBounds = React.useMemo(() => {
-    if (region && region.latMin && region.latMax && region.lonMin && region.lonMax) {
+    if (region && region.latMin != null && region.latMax != null && region.lonMin != null && region.lonMax != null) {
       return [
         [region.latMin, region.lonMin],
         [region.latMax, region.lonMax]
@@ -221,8 +221,8 @@ export default function RegionMapVisualization({
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
 
-        {/* Region boundary - Rectangle for ocean regions, Circle for landmarks */}
-        {regionBounds && !region?.centroid && (
+        {/* Region boundary - Rectangle for ocean regions or if no radius is defined */}
+        {regionBounds && (!region?.adaptiveRadiusKm) && (
           <Rectangle
             bounds={regionBounds}
             pathOptions={{

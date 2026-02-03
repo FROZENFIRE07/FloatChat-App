@@ -55,11 +55,23 @@
   /* Hide default cursor for custom morphing cursor */
 }
 
+/* 📱 RESTORE CURSOR ON MOBILE */
+/* 📱 RESTORE CURSOR ON MOBILE */
+@media (max-width: 768px) {
+  * {
+    cursor: auto !important;
+  }
+}
+
 /* Restore normal cursor for non-landing pages */
 .category1-exploration-mode,
 .category1-exploration-mode *,
 .app-analysis-mode,
-.app-analysis-mode * {
+.app-analysis-mode *,
+.app-loading-mode,
+.app-loading-mode *,
+.workspace-layout,
+.workspace-layout * {
   cursor: auto !important;
 }
 

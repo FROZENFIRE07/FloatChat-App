@@ -102,6 +102,28 @@ function App() {
         console.log('🎯 Attached spatialMeta:', mapping.spatialMeta);
       }
 
+      // 🎯 PATCH: Ensure region coordinates from mapping are attached to intent
+      // This ensures the bounding box is drawn even if the LLM output was partial
+      if (mapping?.params) {
+        if (!intent.region) intent.region = {};
+
+        // Map common coordinate keys
+        if (mapping.params.latMin !== undefined) intent.region.latMin = mapping.params.latMin;
+        if (mapping.params.latMax !== undefined) intent.region.latMax = mapping.params.latMax;
+        if (mapping.params.lonMin !== undefined) intent.region.lonMin = mapping.params.lonMin;
+        if (mapping.params.lonMax !== undefined) intent.region.lonMax = mapping.params.lonMax;
+
+        // Also ensure centroid data is available if needed
+        if (mapping.params.centroidLat !== undefined) {
+          if (!intent.spatialMeta) intent.spatialMeta = {};
+          if (!intent.spatialMeta.centroid) intent.spatialMeta.centroid = {};
+          intent.spatialMeta.centroid.lat = mapping.params.centroidLat;
+          intent.spatialMeta.centroid.lon = mapping.params.centroidLon;
+        }
+
+        console.log('🩹 Patched intent.region with mapping params:', intent.region);
+      }
+
       setCurrentIntent(intent);
       setApiMapping(mapping);
       setThinkingStage('fetching');
@@ -273,7 +295,15 @@ function App() {
       time_semantic: "January 2019",
       start_time: "2019-01-01T00:00:00Z",
       end_time: "2019-01-31T23:59:59Z",
-      demo_mode: true
+      demo_mode: true,
+      // 🎯 Fix: Include specific spatialMeta for map rendering
+      spatialMeta: {
+        centroid: { lat: 16.5, lon: 62.5 }, // Approximate center of Arabian Sea bounds
+        adaptiveRadiusKm: null, // Use bounds for sea/ocean, not radius
+        displayName: "Arabian Sea",
+        isOceanRegion: true,
+        source: "demo_preset"
+      }
     };
 
     setCurrentQuery(demoQuery);

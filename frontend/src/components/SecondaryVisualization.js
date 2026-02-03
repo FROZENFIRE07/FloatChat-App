@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './SecondaryVisualization.css';
 
@@ -14,13 +14,21 @@ import './SecondaryVisualization.css';
  * - Collapsible by default, revealed on demand
  */
 
-export default function SecondaryVisualization({ 
+export default function SecondaryVisualization({
   floats = [],
   variable = 'temperature',
+  timeRange = null,
   className = ''
 }) {
   const [activeView, setActiveView] = useState('temporal'); // 'temporal' | 'depth' | null
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Prepare temporal data (average by date)
   const temporalData = React.useMemo(() => {
@@ -30,15 +38,15 @@ export default function SecondaryVisualization({
     const dateGroups = {};
     floats.forEach(float => {
       if (!float.time) return;
-      
+
       const date = new Date(float.time).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric'
       });
-      
+
       const value = variable === 'temperature' ? float.temperature : float.salinity;
-      
+
       if (value !== null && value !== undefined) {
         if (!dateGroups[date]) {
           dateGroups[date] = { values: [], timestamp: new Date(float.time).getTime() };
@@ -93,16 +101,16 @@ export default function SecondaryVisualization({
         <div className="secondary-viz-title">
           {activeView === 'temporal' ? 'Temporal Distribution' : 'Depth Distribution'}
         </div>
-        
+
         <div className="secondary-viz-controls">
           <button
-            className={`viz-toggle ${activeView === 'temporal' ? 'active' : ''}`}
+            className={`viz-toggle toggle-temporal ${activeView === 'temporal' ? 'active' : ''}`}
             onClick={() => setActiveView('temporal')}
           >
             Time Series
           </button>
           <button
-            className={`viz-toggle ${activeView === 'depth' ? 'active' : ''}`}
+            className={`viz-toggle toggle-depth ${activeView === 'depth' ? 'active' : ''}`}
             onClick={() => setActiveView('depth')}
           >
             Depth
@@ -112,10 +120,10 @@ export default function SecondaryVisualization({
             onClick={() => setIsExpanded(!isExpanded)}
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 16 16" 
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
               fill="none"
               style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
             >
@@ -128,26 +136,45 @@ export default function SecondaryVisualization({
       {isExpanded && (
         <div className="secondary-viz-content">
           {activeView === 'temporal' && temporalData.length > 0 && (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={temporalData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fontSize: 11, fill: '#607d8b' }}
+            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+              <LineChart data={temporalData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isMobile ? "rgba(255, 255, 255, 0.08)" : "#e0e0e0"}
+                  vertical={!isMobile}
+                />
+                <XAxis
+                  dataKey="timestamp"
+                  type="number"
+                  domain={[
+                    timeRange?.min || 'auto',
+                    timeRange?.max || 'auto'
+                  ]}
+                  scale="time"
+                  tickFormatter={(unixTime) => new Date(unixTime).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric'
+                  })}
+                  tick={{ fontSize: isMobile ? 9 : 11, fill: isMobile ? "rgba(255, 255, 255, 0.55)" : '#607d8b' }}
                   angle={-45}
                   textAnchor="end"
-                  height={80}
+                  height={60}
+                  tickCount={isMobile ? 5 : 8}
+                  axisLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
+                  tickLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
                 />
-                <YAxis 
-                  tick={{ fontSize: 11, fill: '#607d8b' }}
-                  label={{ 
-                    value: variableLabel, 
-                    angle: -90, 
+                <YAxis
+                  tick={{ fontSize: isMobile ? 9 : 11, fill: isMobile ? "rgba(255, 255, 255, 0.55)" : '#607d8b' }}
+                  width={isMobile ? 35 : 60}
+                  axisLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
+                  tickLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
+                  label={{
+                    value: isMobile ? '' : variableLabel, // Hide label on mobile to save space
+                    angle: -90,
                     position: 'insideLeft',
                     style: { fontSize: 12, fill: '#263238' }
                   }}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     background: 'rgba(255, 255, 255, 0.98)',
                     border: '1px solid #e0e0e0',
@@ -155,44 +182,59 @@ export default function SecondaryVisualization({
                     fontSize: '12px'
                   }}
                   formatter={(value, name) => [value.toFixed(2), variableLabel]}
-                  labelFormatter={(label) => `Date: ${label}`}
+                  labelFormatter={(value) => `Date: ${new Date(value).toLocaleDateString('en-US', {
+                    weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+                  })}`}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke={variableColor}
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke={isMobile ? "#4DA3FF" : variableColor}
                   strokeWidth={2}
-                  dot={{ r: 4, fill: variableColor }}
-                  activeDot={{ r: 6 }}
+                  dot={{ r: 4, fill: isMobile ? "#4DA3FF" : variableColor }}
+                  activeDot={{ r: 6, fill: isMobile ? "#7AB8FF" : variableColor }}
                 />
               </LineChart>
             </ResponsiveContainer>
           )}
 
           {activeView === 'depth' && depthData.length > 0 && (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={depthData} margin={{ top: 10, right: 30, left: 10, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis 
-                  dataKey="range" 
-                  tick={{ fontSize: 11, fill: '#607d8b' }}
-                  label={{ 
-                    value: 'Depth Range', 
+            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+              <LineChart data={depthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={isMobile ? "rgba(255, 255, 255, 0.08)" : "#e0e0e0"}
+                  vertical={!isMobile}
+                />
+                <XAxis
+                  dataKey="range"
+                  tick={{ fontSize: isMobile ? 9 : 11, fill: isMobile ? "rgba(255, 255, 255, 0.55)" : '#607d8b' }}
+                  interval={isMobile ? 0 : 'preserveStartEnd'}
+                  angle={isMobile ? -30 : 0}
+                  textAnchor={isMobile ? 'end' : 'middle'}
+                  height={isMobile ? 50 : 30}
+                  axisLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
+                  tickLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
+                  label={{
+                    value: isMobile ? '' : 'Depth Range',
                     position: 'insideBottom',
                     offset: -5,
                     style: { fontSize: 12, fill: '#263238' }
                   }}
                 />
-                <YAxis 
-                  tick={{ fontSize: 11, fill: '#607d8b' }}
-                  label={{ 
-                    value: 'Profile Count', 
-                    angle: -90, 
+                <YAxis
+                  tick={{ fontSize: isMobile ? 9 : 11, fill: isMobile ? "rgba(255, 255, 255, 0.55)" : '#607d8b' }}
+                  width={isMobile ? 30 : 60}
+                  axisLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
+                  tickLine={{ stroke: isMobile ? "rgba(255, 255, 255, 0.15)" : "#666" }}
+                  label={{
+                    value: isMobile ? '' : 'Profile Count',
+                    angle: -90,
                     position: 'insideLeft',
                     style: { fontSize: 12, fill: '#263238' }
                   }}
                 />
-                <Tooltip 
+                <Tooltip
                   contentStyle={{
                     background: 'rgba(255, 255, 255, 0.98)',
                     border: '1px solid #e0e0e0',
@@ -201,24 +243,24 @@ export default function SecondaryVisualization({
                   }}
                   formatter={(value) => [value, 'Profiles']}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="count" 
-                  stroke="#26a69a"
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke={isMobile ? "#2EC4B6" : "#26a69a"}
                   strokeWidth={2}
-                  dot={{ r: 5, fill: '#26a69a' }}
-                  activeDot={{ r: 7 }}
+                  dot={{ r: 5, fill: isMobile ? "#3ED6C6" : "#26a69a" }}
+                  activeDot={{ r: 7, fill: isMobile ? "#6FE3D8" : "#26a69a" }}
                 />
               </LineChart>
             </ResponsiveContainer>
           )}
 
-          {((activeView === 'temporal' && temporalData.length === 0) || 
+          {((activeView === 'temporal' && temporalData.length === 0) ||
             (activeView === 'depth' && depthData.length === 0)) && (
-            <div className="no-data-message">
-              No {activeView === 'temporal' ? 'temporal' : 'depth'} data available for visualization
-            </div>
-          )}
+              <div className="no-data-message">
+                No {activeView === 'temporal' ? 'temporal' : 'depth'} data available for visualization
+              </div>
+            )}
         </div>
       )}
     </div>
