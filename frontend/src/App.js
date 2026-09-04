@@ -8,6 +8,7 @@ import LandingPage from './components/LandingPage';
 import ThinkingIndicator from './components/ThinkingIndicator';
 import WorkspaceLayout from './components/WorkspaceLayout';
 
+const DEMO_QUERY = 'What are the temperature and salinity readings near latitude 18.5 and longitude 66.2 on January 15, 2024?';
 
 /**
  * FloatChat - Scientific Exploration Interface
@@ -44,7 +45,6 @@ function App() {
 
   // System Health
   const [, setArgoHealth] = useState(null);
-  const [, setAiHealth] = useState(false);
 
   // Initialize: Check system health
   useEffect(() => {
@@ -55,8 +55,6 @@ function App() {
     try {
       const argoResponse = await argoAPI.healthCheck();
       setArgoHealth(argoResponse.data);
-      const aiHealthy = await intentParser.healthCheck();
-      setAiHealth(aiHealthy);
     } catch (err) {
       console.error('Health check failed:', err);
     }
@@ -64,6 +62,11 @@ function App() {
 
   // Handle first query submission - go directly to loading
   const handleFirstQuery = async (query) => {
+    if (query.trim().toLowerCase() === DEMO_QUERY.toLowerCase()) {
+      handleDemoMode();
+      return;
+    }
+
     // 1. Go directly to loading state
     setCurrentQuery(query);
     setErrorMessage(null);
@@ -286,22 +289,22 @@ function App() {
 
   // Handle demo mode
   const handleDemoMode = async () => {
-    const demoQuery = "Show temperature data in the Arabian Sea during January 2019.";
+    const demoQuery = DEMO_QUERY;
     const demoIntent = {
       intent_type: "SPATIAL_TEMPORAL_QUERY",
       variable: "temperature",
-      region_semantic: "arabian_sea",
-      region: { name: "Arabian Sea", latMin: 8, latMax: 25, lonMin: 50, lonMax: 75 },
-      time_semantic: "January 2019",
-      start_time: "2019-01-01T00:00:00Z",
-      end_time: "2019-01-31T23:59:59Z",
+      variables: ["temperature", "salinity"],
+      region_semantic: "sample_location",
+      region: { name: "Sample location", latMin: 18, latMax: 19, lonMin: 66, lonMax: 67 },
+      time_semantic: "January 15, 2024",
+      start_time: "2024-01-15T00:00:00Z",
+      end_time: "2024-01-16T00:00:00Z",
       demo_mode: true,
-      // 🎯 Fix: Include specific spatialMeta for map rendering
       spatialMeta: {
-        centroid: { lat: 16.5, lon: 62.5 }, // Approximate center of Arabian Sea bounds
-        adaptiveRadiusKm: null, // Use bounds for sea/ocean, not radius
-        displayName: "Arabian Sea",
-        isOceanRegion: true,
+        centroid: { lat: 18.5, lon: 66.2 },
+        adaptiveRadiusKm: null,
+        displayName: "Sample location",
+        isOceanRegion: false,
         source: "demo_preset"
       }
     };
